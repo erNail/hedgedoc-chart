@@ -1,0 +1,30 @@
+---
+apiVersion: "argoproj.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: "hedgedoc"
+  namespace: "argocd"
+spec:
+  project: "default"
+  sources:
+    - repoURL: "https://github.com/erNail/hedgedoc-chart"
+      targetRevision: "main"
+      path: "examples/argocd-pgnative"
+      ref: "values"
+    - repoURL: "https://github.com/erNail/hedgedoc-chart"
+      targetRevision: "main"
+      path: "chart"
+      helm:
+        releaseName: "hedgedoc"
+        valueFiles:
+          - "$values/examples/argocd-pgnative/values-hedgedoc.yaml"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: "hedgedoc"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - "CreateNamespace=true"
+...

@@ -1,0 +1,18 @@
+---
+apiVersion: "postgresql.cnpg.io/v1"
+kind: "Cluster"
+metadata:
+  name: "postgresql-hedgedoc"
+  namespace: "hedgedoc"
+spec:
+  instances: 2
+  storage:
+    size: "16Gi"
+    storageClass: "nfs-subdir-retain"
+  bootstrap:
+    initdb:
+      database: "hedgedoc"
+      owner: "hedgedoc"
+      secret:
+        name: "hedgedoc-db-credentials"
+...

@@ -1,0 +1,141 @@
+---
+suite: "persistent volume claim template"
+templates:
+  - "persistent-volume-claim.yaml"
+tests:
+  - it: "should not render persistent volume claim if disabled"
+    set:
+      persistence:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render persistent volume claim if enabled"
+    set:
+      persistence:
+        enabled: true
+    asserts:
+      - isKind:
+          of: "PersistentVolumeClaim"
+
+  - it: "should render apiVersion with default value"
+    set:
+      persistence:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      persistence:
+        enabled: true
+      apiVersions:
+        persistentVolumeClaim: "v1beta1"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1beta1"
+
+  - it: "should render name with default value"
+    set:
+      persistence:
+        enabled: true
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "hedgedoc-image-uploads"
+
+  - it: "should render name as set"
+    set:
+      persistence:
+        enabled: true
+        pvcName: "custom-pvc-name"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "custom-pvc-name"
+
+  - it: "should not render annotations if not set"
+    set:
+      persistence:
+        enabled: true
+        annotations: null
+    asserts:
+      - notExists:
+          path: "metadata.annotations"
+
+  - it: "should render annotations as set"
+    set:
+      persistence:
+        enabled: true
+        annotations:
+          example.com/annotation: "value"
+    asserts:
+      - equal:
+          path: "metadata.annotations"
+          value:
+            example.com/annotation: "value"
+
+  - it: "should render accessModes with default value"
+    set:
+      persistence:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.accessModes"
+          value:
+            - "ReadWriteOnce"
+
+  - it: "should render accessModes as set"
+    set:
+      persistence:
+        enabled: true
+        accessModes:
+          - "ReadWriteMany"
+    asserts:
+      - equal:
+          path: "spec.accessModes"
+          value:
+            - "ReadWriteMany"
+
+  - it: "should render storage request with default value"
+    set:
+      persistence:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.resources.requests.storage"
+          value: "8Gi"
+
+  - it: "should render storage request as set"
+    set:
+      persistence:
+        enabled: true
+        size: "10Gi"
+    asserts:
+      - equal:
+          path: "spec.resources.requests.storage"
+          value: "10Gi"
+
+  - it: "should render storage class name with default value"
+    set:
+      persistence:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.storageClassName"
+          value: ""
+
+  - it: "should render storage class name as set"
+    set:
+      persistence:
+        enabled: true
+        storageClass: "standard"
+    asserts:
+      - equal:
+          path: "spec.storageClassName"
+          value: "standard"
+...

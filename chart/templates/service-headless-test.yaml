@@ -1,0 +1,71 @@
+---
+suite: "service headless template"
+templates:
+  - "service-headless.yaml"
+tests:
+  - it: "should not render if disabled"
+    set:
+      service:
+        enableAdditionalHeadlessService: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render if enabled"
+    set:
+      service:
+        enableAdditionalHeadlessService: true
+    asserts:
+      - isKind:
+          of: "Service"
+
+  - it: "should render apiVersion with default value"
+    set:
+      service:
+        enableAdditionalHeadlessService: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      apiVersions:
+        service: "v1beta1"
+      service:
+        enableAdditionalHeadlessService: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1beta1"
+
+  - it: "should render ports with default value"
+    set:
+      service:
+        enableAdditionalHeadlessService: true
+    asserts:
+      - equal:
+          path: "spec.ports"
+          value:
+            - name: "http"
+              port: 3000
+              targetPort: "http"
+              protocol: "TCP"
+
+  - it: "should render ports as set"
+    set:
+      service:
+        enableAdditionalHeadlessService: true
+        ports:
+          - name: "metrics"
+            port: 8080
+            targetPort: "metrics"
+            protocol: "TCP"
+    asserts:
+      - equal:
+          path: "spec.ports"
+          value:
+            - name: "metrics"
+              port: 8080
+              targetPort: "metrics"
+              protocol: "TCP"

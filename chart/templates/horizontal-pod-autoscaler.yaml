@@ -1,0 +1,35 @@
+{{- if .Values.autoscaling.enabled -}}
+---
+kind: "HorizontalPodAutoscaler"
+apiVersion: {{ .Values.apiVersions.horizontalPodAutoscaler | quote }}
+metadata:
+  name: {{ include "names.fullname" . | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind: "Deployment"
+    name: {{ include "names.fullname" . | quote }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+    - type: "Resource"
+      resource:
+        name: "cpu"
+        target:
+          type: "Utilization"
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: "Resource"
+      resource:
+        name: "memory"
+        target:
+          type: "Utilization"
+          averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+...
+{{- end }}

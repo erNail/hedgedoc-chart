@@ -1,0 +1,187 @@
+---
+suite: "helpers names and labels"
+templates:
+  - "deployment.yaml"
+tests:
+  - it: "should render labels.commonLabels with default value"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "testrel"
+    asserts:
+      - equal:
+          path: "metadata.labels"
+          value:
+            helm.sh/chart: "hedgedoc-1.2.3"
+            app.kubernetes.io/name: "hedgedoc"
+            app.kubernetes.io/instance: "testrel"
+            app.kubernetes.io/version: "2.0.0"
+            app.kubernetes.io/managed-by: "Helm"
+
+  - it: "should render labels.matchLabels with default value"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "testrel"
+    asserts:
+      - equal:
+          path: "spec.selector.matchLabels"
+          value:
+            app.kubernetes.io/name: "hedgedoc"
+            app.kubernetes.io/instance: "testrel"
+
+  - it: "should render labels.matchLabels with the name defined in nameOverride using names.name"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "testrel"
+    set:
+      nameOverride: "test-name"
+    asserts:
+      - equal:
+          path: "spec.selector.matchLabels"
+          value:
+            app.kubernetes.io/name: "test-name"
+            app.kubernetes.io/instance: "testrel"
+
+  - it: "should render names.fullname with the value defined in fullnameOverride"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "testrel"
+    set:
+      fullnameOverride: "test-name"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "test-name"
+
+  - it: "should render names.fullname with the value defined in fullnameOverride"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "testrel"
+    set:
+      fullnameOverride: "test-name"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "test-name"
+
+  - it: "should render names.fullname with the value defined in nameOverride"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "testrel"
+    set:
+      nameOverride: "test-name"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "testrel-test-name"
+
+  - it: "should render names.fullname with equal release and chart name"
+    chart:
+      version: "1.2.3"
+      appVersion: "2.0.0"
+    release:
+      name: "hedgedoc"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "hedgedoc"
+
+  - it: "should render names.namespace with the value defined in namespaceOverride"
+    release:
+      name: "testrel"
+    set:
+      namespaceOverride: "test-namespace"
+    asserts:
+      - equal:
+          path: "metadata.namespace"
+          value: "test-namespace"
+
+
+  - it: "should render names.namespace with the release namespace"
+    release:
+      name: "testrel"
+      namespace: "test-namespace"
+    asserts:
+      - equal:
+          path: "metadata.namespace"
+          value: "test-namespace"
+...
+---
+suite: "helpers serviceaccount"
+templates:
+  - "serviceaccount.yaml"
+tests:
+  - it: "should render names.serviceAccountName as names.fullname when create is true"
+    set:
+      serviceAccount:
+        create: true
+    release:
+      name: "testrel"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "testrel-hedgedoc"
+
+  - it: "should render names.serviceAccountName as serviceAccount.name when create is true"
+    set:
+      serviceAccount:
+        create: true
+        name: "custom-serviceaccount"
+    release:
+      name: "testrel"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "custom-serviceaccount"
+
+
+  - it: "should render names.serviceAccountName as serviceAccount.name when create is false"
+    set:
+      serviceAccount:
+        create: false
+        name: "custom-serviceaccount"
+    release:
+      name: "testrel"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "custom-serviceaccount"
+
+  - it: "should render names.serviceAccountName as 'default' when create is false and serviceAccount.name is not set"
+    set:
+      serviceAccount:
+        create: false
+    release:
+      name: "testrel"
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "default"
+...
+---
+suite: "helpers fullnameSuffix"
+templates:
+  - "service-metrics.yaml"
+tests:
+  - it: "should render fullname with suffix '-metrics'"
+    release:
+      name: "testrel"
+    set:
+      metrics:
+        enabled: true
+    asserts:
+      - equal:
+          path: "metadata.name"
+          value: "testrel-hedgedoc-metrics"
+...

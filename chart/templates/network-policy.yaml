@@ -1,0 +1,69 @@
+{{- if .Values.networkPolicy.enabled -}}
+---
+kind: "NetworkPolicy"
+apiVersion: {{ .Values.apiVersions.networkPolicy | quote }}
+metadata:
+  name: {{ include "names.fullname" . | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+  {{- with .Values.networkPolicy.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "labels.matchLabels" . | nindent 6 }}
+  policyTypes:
+    - "Ingress"
+    - "Egress"
+
+  {{- if .Values.networkPolicy.egress.allowAll }}
+  egress:
+    - {}
+  {{- else }}
+  egress:
+    - ports:
+        # Allow DNS resolution
+        - port: 53
+          protocol: "TCP"
+        - port: 53
+          protocol: "UDP"
+  {{- with .Values.networkPolicy.egress.extraRules}}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+
+  {{- if .Values.networkPolicy.ingress.allowAll }}
+  ingress:
+    - {}
+  {{- else }}
+  ingress:
+    {{- if .Values.ingress.enabled  }}
+    # Allow ingres-controller access
+    - ports:
+        {{- range .Values.networkPolicy.ingress.ingressController.containerPorts }}
+        - port: {{ . | quote }}
+          protocol: "TCP"
+        {{- end }}
+      from:
+        {{- toYaml .Values.networkPolicy.ingress.ingressController.from | nindent 8 }}
+    {{- end }}
+
+    {{- if .Values.metrics.enabled }}
+    # Allow scrapers to access the metrics
+    - ports:
+        {{- range .Values.metrics.service.ports }}
+        - port: {{ .targetPort | quote }}
+          protocol: "TCP"
+        {{- end }}
+      from:
+        {{- toYaml .Values.networkPolicy.ingress.metricsScraper.from | nindent 8 }}
+    {{- end }}
+  {{- with .Values.networkPolicy.ingress.extraRules }}
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+...
+{{- end }}

@@ -1,0 +1,20 @@
+---
+kind: "Service"
+apiVersion: {{ .Values.apiVersions.service | quote }}
+metadata:
+  name: {{ include "names.fullname" . | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type | quote }}
+  ports:
+    {{- range .Values.service.ports }}
+    - name: {{ .name | quote }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort | quote }}
+      protocol: {{ .protocol | quote }}
+    {{- end }}
+  selector:
+    {{- include "labels.matchLabels" . | nindent 4 }}
+...

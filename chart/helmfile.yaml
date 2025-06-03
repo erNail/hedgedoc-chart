@@ -1,0 +1,11 @@
+---
+releases:
+  - name: "hedgedoc"
+    namespace: "hedgedoc"
+    chart: "./"
+    version: "0.1.0"
+    missingFileHandler: "Error"
+    values:
+      - "values.yaml"
+      - "values-linting.yaml"
+...

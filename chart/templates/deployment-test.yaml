@@ -1,0 +1,488 @@
+---
+suite: "deployment template"
+templates:
+  - "deployment.yaml"
+tests:
+  - it: "should render apiVersion with default value"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "apps/v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      apiVersions:
+        deployment: "apps/v2"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "apps/v2"
+
+  - it: "should render replicas with default value"
+    asserts:
+      - exists:
+          path: "spec.replicas"
+
+  - it: "should render replicas if autoscaling is disabled"
+    set:
+      autoscaling:
+        enabled: false
+    asserts:
+      - exists:
+          path: "spec.replicas"
+
+  - it: "should not render replicas if autoscaling is enabled"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - notExists:
+          path: "spec.replicas"
+
+  - it: "should render default replicaCount"
+    set:
+      replicaCount: 2
+    asserts:
+      - equal:
+          path: "spec.replicas"
+          value: 2
+
+  - it: "should render set replicaCount"
+    set:
+      replicaCount: 3
+    asserts:
+      - equal:
+          path: "spec.replicas"
+          value: 3
+
+  - it: "should render default strategy"
+    asserts:
+      - equal:
+          path: "spec.strategy"
+          value:
+            type: "RollingUpdate"
+
+  - it: "should render set strategy"
+    set:
+      strategy:
+        type: "Recreate"
+    asserts:
+      - equal:
+          path: "spec.strategy"
+          value:
+            type: "Recreate"
+
+  - it: "should not render podAnnotations with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.metadata.annotations"
+
+  - it: "should render podAnnotations as set"
+    set:
+      podAnnotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    asserts:
+      - equal:
+          path: "spec.template.metadata.annotations"
+          value:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "8080"
+
+  - it: "should not render extraPodLabels with default value"
+    chart:
+      appVersion: "0.0.0"
+    release:
+      name: "hedgedoc"
+    asserts:
+      - equal:
+          path: "spec.template.metadata.labels"
+          value:
+            app.kubernetes.io/instance: hedgedoc
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: hedgedoc
+            app.kubernetes.io/version: 0.0.0
+            helm.sh/chart: hedgedoc-0.0.0
+
+  - it: "should render extraPodLabels as set"
+    chart:
+      appVersion: "0.0.0"
+    release:
+      name: "hedgedoc"
+    set:
+      extraPodLabels:
+        test: "test"
+    asserts:
+      - equal:
+          path: "spec.template.metadata.labels"
+          value:
+            app.kubernetes.io/instance: hedgedoc
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: hedgedoc
+            app.kubernetes.io/version: 0.0.0
+            helm.sh/chart: hedgedoc-0.0.0
+            test: test
+
+  - it: "should not render imagePullSecrets with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.spec.imagePullSecrets"
+
+  - it: "should render imagePullSecrets as set"
+    set:
+      imagePullSecrets:
+        - name: "myregistrykey"
+    asserts:
+      - equal:
+          path: "spec.template.spec.imagePullSecrets"
+          value:
+            - name: "myregistrykey"
+
+  - it: "should not render podSecurityContext with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.spec.securityContext"
+
+  - it: "should render podSecurityContext as set"
+    set:
+      podSecurityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+    asserts:
+      - equal:
+          path: "spec.template.spec.securityContext"
+          value:
+            fsGroup: 1000
+            runAsUser: 1000
+
+  - it: "should render container name as Chart.Name"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].name"
+          value: "hedgedoc"
+
+  - it: "should render container env with default value"
+    asserts:
+      - isNotEmpty:
+          path: "spec.template.spec.containers[0].env"
+
+  - it: "should render container env as set"
+    set:
+      app:
+        env:
+          - name: "ENV_VAR"
+            value: "value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].env"
+          value:
+            - name: "ENV_VAR"
+              value: "value"
+
+  - it: "should render container securityContext with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].securityContext"
+          value:
+            readOnlyRootFilesystem: true
+            runAsGroup: 10001
+            runAsUser: 10001
+
+  - it: "should render container securityContext as set"
+    set:
+      containerSecurityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        readOnlyRootFilesystem: false
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].securityContext"
+          value:
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: false
+
+  - it: "should render image with default value"
+    chart:
+      appVersion: "0.0.0"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].image"
+          value: "quay.io/hedgedoc/hedgedoc:0.0.0"
+
+  - it: "should render image with set values"
+    set:
+      image:
+        repository: "myrepo/myimage"
+        tag: "latest"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].image"
+          value: "myrepo/myimage:latest"
+
+  - it: "should render imagePullPolicy with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].imagePullPolicy"
+          value: "Always"
+
+  - it: "should render imagePullPolicy as set"
+    set:
+      image:
+        pullPolicy: "IfNotPresent"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].imagePullPolicy"
+          value: "IfNotPresent"
+
+  - it: "should render container ports with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].ports"
+          value:
+            - name: "http"
+              containerPort: 3000
+              protocol: "TCP"
+            - name: "metrics"
+              containerPort: 3000
+              protocol: "TCP"
+
+  - it: "should render container ports as set"
+    set:
+      containerPorts:
+        - name: "http"
+          port: 8080
+          protocol: "TCP"
+        - name: "metrics"
+          port: 9090
+          protocol: "TCP"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].ports"
+          value:
+            - name: "http"
+              containerPort: 8080
+              protocol: "TCP"
+            - name: "metrics"
+              containerPort: 9090
+              protocol: "TCP"
+
+  - it: "should not render livenessProbe with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.spec.containers[0].livenessProbe"
+
+  - it: "should render livenessProbe as set"
+    set:
+      livenessProbe:
+        httpGet:
+          path: "/healthz"
+          port: "http"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].livenessProbe"
+          value:
+            httpGet:
+              path: "/healthz"
+              port: "http"
+
+  - it: "should render readinessProbe with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].readinessProbe"
+          value:
+            httpGet:
+              path: "/status"
+              port: "http"
+
+  - it: "should render readinessProbe as set"
+    set:
+      readinessProbe:
+        httpGet:
+          path: "/healthz"
+          port: "http"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].readinessProbe"
+          value:
+            httpGet:
+              path: "/healthz"
+              port: "http"
+
+  - it: "should render resources with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].resources"
+          value:
+            limits:
+              cpu: "100m"
+              ephemeral-storage: "128Mi"
+              memory: "128Mi"
+            requests:
+              cpu: "100m"
+              ephemeral-storage: "128Mi"
+              memory: "128Mi"
+
+  - it: "should render resources as set"
+    set:
+      resources:
+        limits:
+          cpu: "200m"
+          memory: "256Mi"
+          ephemeral-storage: "256Mi"
+        requests:
+          cpu: "200m"
+          memory: "256Mi"
+          ephemeral-storage: "256Mi"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].resources"
+          value:
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+              ephemeral-storage: "256Mi"
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+              ephemeral-storage: "256Mi"
+
+  - it: "should render volumeMounts with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].volumeMounts"
+          value:
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /hedgedoc/public/uploads
+              name: hedgedoc-image-uploads
+
+  - it: "should render volumeMounts as set"
+    set:
+      volumeMounts:
+        - name: "foo"
+          mountPath: "/etc/foo"
+          readOnly: true
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].volumeMounts"
+          value:
+            - name: "foo"
+              mountPath: "/etc/foo"
+              readOnly: true
+
+  - it: "should render volumes with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.volumes"
+          value:
+            - emptyDir: {}
+              name: tmp
+            - name: hedgedoc-image-uploads
+              persistentVolumeClaim:
+                claimName: hedgedoc-image-uploads
+
+  - it: "should render volumes as set"
+    set:
+      volumes:
+        - name: "foo"
+          secret:
+            secretName: "mysecret"
+            optional: false
+    asserts:
+      - equal:
+          path: "spec.template.spec.volumes"
+          value:
+            - name: "foo"
+              secret:
+                secretName: "mysecret"
+                optional: false
+
+  - it: "should not render nodeSelector with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.spec.nodeSelector"
+
+  - it: "should render nodeSelector as set"
+    set:
+      nodeSelector:
+        disktype: "ssd"
+    asserts:
+      - equal:
+          path: "spec.template.spec.nodeSelector"
+          value:
+              disktype: "ssd"
+
+  - it: "should not render affinity with default value"
+    asserts:
+      - equal:
+          path: "spec.template.spec.affinity"
+          value: null
+
+  - it: "should render host pod anti affinity if enabled"
+    release:
+      name: "hedgedoc"
+    set:
+      hostPodAntiAffinity:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.template.spec.affinity"
+          value:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 50
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/instance: hedgedoc
+                        app.kubernetes.io/name: hedgedoc
+                    topologyKey: "kubernetes.io/hostname"
+
+  - it: "should render affinity as set"
+    release:
+      name: "hedgedoc"
+    set:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+    asserts:
+      - equal:
+          path: "spec.template.spec.affinity"
+          value:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+
+  - it: "should not render tolerations with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.spec.tolerations"
+
+  - it: "should render tolerations as set"
+    set:
+      tolerations:
+        - key: "key"
+          operator: "Equal"
+          value: "value"
+          effect: "NoSchedule"
+    asserts:
+      - equal:
+          path: "spec.template.spec.tolerations"
+          value:
+            - key: "key"
+              operator: "Equal"
+              value: "value"
+              effect: "NoSchedule"
+...

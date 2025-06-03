@@ -1,0 +1,64 @@
+---
+suite: "service template"
+templates:
+  - "service.yaml"
+tests:
+  - it: "should render apiVersion with default value"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      apiVersions:
+        service: "v1beta1"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1beta1"
+
+  - it: "should render service type with default value"
+    set:
+      service:
+        type: "ClusterIP"
+    asserts:
+      - equal:
+          path: "spec.type"
+          value: "ClusterIP"
+
+  - it: "should render service type as set"
+    set:
+      service:
+        type: "NodePort"
+    asserts:
+      - equal:
+          path: "spec.type"
+          value: "NodePort"
+
+  - it: "should render ports with default value"
+    asserts:
+      - equal:
+          path: "spec.ports"
+          value:
+            - name: "http"
+              port: 3000
+              targetPort: "http"
+              protocol: "TCP"
+
+  - it: "should render ports as set"
+    set:
+      service:
+        ports:
+          - name: "http"
+            port: 80
+            targetPort: "http"
+            protocol: "TCP"
+    asserts:
+      - equal:
+          path: "spec.ports"
+          value:
+            - name: "http"
+              port: 80
+              targetPort: "http"
+              protocol: "TCP"

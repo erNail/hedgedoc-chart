@@ -1,0 +1,23 @@
+{{- if .Values.service.enableAdditionalHeadlessService -}}
+---
+kind: "Service"
+apiVersion: {{ .Values.apiVersions.service | quote }}
+metadata:
+  name: {{ include "names.fullnameSuffix" (dict "suffix" "headless" "context" .) | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+spec:
+  type: "ClusterIP"
+  clusterIP: "None"
+  ports:
+    {{- range .Values.service.ports }}
+    - name: {{ .name | quote }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort | quote }}
+      protocol: {{ .protocol | quote }}
+    {{- end }}
+  selector:
+    {{- include "labels.matchLabels" . | nindent 4 }}
+...
+{{- end}}

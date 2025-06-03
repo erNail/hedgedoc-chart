@@ -1,0 +1,165 @@
+---
+suite: "ingress template"
+templates:
+  - "ingress.yaml"
+tests:
+  - it: "should not render ingress if disabled"
+    set:
+      ingress:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render ingress if enabled"
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - isKind:
+          of: "Ingress"
+
+  - it: "should render apiVersion with default value"
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "networking.k8s.io/v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      ingress:
+        enabled: true
+      apiVersions:
+        ingress: "networking.k8s.io/v1beta1"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "networking.k8s.io/v1beta1"
+
+  - it: "should not render annotations if not set"
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - notExists:
+          path: "metadata.annotations"
+
+  - it: "should render annotations as set"
+    set:
+      ingress:
+        enabled: true
+        annotations:
+          nginx.ingress.kubernetes.io/rewrite-target: "/"
+    asserts:
+      - equal:
+          path: "metadata.annotations"
+          value:
+            nginx.ingress.kubernetes.io/rewrite-target: "/"
+
+  - it: "should render ingressClassName with default value"
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.ingressClassName"
+          value: "nginx"
+
+  - it: "should render ingressClassName as set"
+    set:
+      ingress:
+        enabled: true
+        className: "traefik"
+    asserts:
+      - equal:
+          path: "spec.ingressClassName"
+          value: "traefik"
+
+  - it: "should not render tls if not set"
+    set:
+      ingress:
+        enabled: true
+        tls: []
+    asserts:
+      - notExists:
+          path: "spec.tls"
+
+  - it: "should render tls with default value"
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.tls"
+          value:
+            - hosts:
+                - "hedgedoc.example.com"
+              secretName: "hedgedoc-tls"
+
+  - it: "should render tls as set"
+    set:
+      ingress:
+        enabled: true
+        tls:
+          - hosts:
+              - "test.example.com"
+            secretName: "test-tls"
+    asserts:
+      - equal:
+          path: "spec.tls"
+          value:
+            - hosts:
+                - "test.example.com"
+              secretName: "test-tls"
+
+  - it: "should render rules with default value"
+    release:
+      name: "hedgedoc"
+    set:
+      ingress:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.rules"
+          value:
+            - host: "hedgedoc.example.com"
+              http:
+                paths:
+                  - path: "/"
+                    pathType: "Prefix"
+                    backend:
+                      service:
+                        name: "hedgedoc"
+                        port:
+                          name: "http"
+
+  - it: "should render rules correctly as set"
+    release:
+      name: "hedgedoc"
+    set:
+      ingress:
+        enabled: true
+        hosts:
+          - host: "app.custom.com"
+            paths:
+              - path: "/custom"
+                pathType: "Exact"
+                servicePortName: "custom-service-port"
+    asserts:
+      - equal:
+          path: "spec.rules"
+          value:
+            - host: "app.custom.com"
+              http:
+                paths:
+                  - path: "/custom"
+                    pathType: "Exact"
+                    backend:
+                      service:
+                        name: "hedgedoc"
+                        port:
+                          name: "custom-service-port"
+...

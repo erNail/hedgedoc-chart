@@ -1,0 +1,92 @@
+---
+suite: "service metrics template"
+templates:
+  - "service-metrics.yaml"
+tests:
+  - it: "should not render if metrics are disabled"
+    set:
+      metrics:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render if metrics are enabled"
+    set:
+      metrics:
+        enabled: true
+    asserts:
+      - isKind:
+          of: "Service"
+
+  - it: "should render apiVersion with default value"
+    set:
+      metrics:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      apiVersions:
+        service: "v1beta1"
+      metrics:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1beta1"
+
+  - it: "should render service type with default value"
+    set:
+      metrics:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.type"
+          value: "ClusterIP"
+
+  - it: "should render service type as set"
+    set:
+      metrics:
+        enabled: true
+        service:
+          type: "NodePort"
+    asserts:
+      - equal:
+          path: "spec.type"
+          value: "NodePort"
+
+  - it: "should render ports with default value"
+    set:
+      metrics:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.ports"
+          value:
+            - name: "metrics"
+              port: 3000
+              targetPort: "metrics"
+              protocol: "TCP"
+
+  - it: "should render ports as set"
+    set:
+      metrics:
+        enabled: true
+        service:
+          ports:
+            - name: "metrics"
+              port: 8080
+              targetPort: "metrics"
+              protocol: "TCP"
+    asserts:
+      - equal:
+          path: "spec.ports"
+          value:
+            - name: "metrics"
+              port: 8080
+              targetPort: "metrics"
+              protocol: "TCP"

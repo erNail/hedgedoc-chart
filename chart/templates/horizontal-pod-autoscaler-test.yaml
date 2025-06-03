@@ -1,0 +1,129 @@
+---
+suite: "hpa template"
+templates:
+  - "horizontal-pod-autoscaler.yaml"
+tests:
+  - it: "should not render hpa if disabled"
+    set:
+      autoscaling:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render hpa if enabled"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - isKind:
+          of: "HorizontalPodAutoscaler"
+
+  - it: "should render apiVersion with default value"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "autoscaling/v2"
+
+  - it: "should render apiVersion as set"
+    set:
+      autoscaling:
+        enabled: true
+      apiVersions:
+        horizontalPodAutoscaler: "autoscaling/v2beta2"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "autoscaling/v2beta2"
+
+  - it: "should render scaleTargetRef name as fullname"
+    release:
+      name: "hedgedoc"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.scaleTargetRef.name"
+          value: "hedgedoc"
+
+  - it:  "should render minReplicas with default value"
+    set:
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+    asserts:
+      - equal:
+          path: "spec.minReplicas"
+          value: 2
+
+  - it: "should render minReplicas as set"
+    set:
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+    asserts:
+      - equal:
+          path: "spec.minReplicas"
+          value: 2
+
+  - it: "should render maxReplicas with default value"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.maxReplicas"
+          value: 100
+
+  - it: "should render maxReplicas as set"
+    set:
+      autoscaling:
+        enabled: true
+        maxReplicas: 2
+    asserts:
+      - equal:
+          path: "spec.maxReplicas"
+          value: 2
+
+  - it: "should render targetCPUUtilizationPercentage with default value"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.metrics[0].resource.target.averageUtilization"
+          value: 80
+
+  - it: "should render targetCPUUtilizationPercentage if set"
+    set:
+      autoscaling:
+        enabled: true
+        targetCPUUtilizationPercentage: 90
+    asserts:
+      - equal:
+          path: "spec.metrics[0].resource.target.averageUtilization"
+          value: 90
+
+  - it: "should render targetMemoryUtilizationPercentage with default value"
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.metrics[1].resource.target.averageUtilization"
+          value: 80
+
+  - it: "should render targetMemoryUtilizationPercentage as set"
+    set:
+      autoscaling:
+        enabled: true
+        targetMemoryUtilizationPercentage: 90
+    asserts:
+      - equal:
+          path: "spec.metrics[1].resource.target.averageUtilization"
+          value: 90
+...

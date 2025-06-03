@@ -1,0 +1,20 @@
+{{- if .Values.configmap.enabled }}
+---
+kind: ConfigMap
+apiVersion: {{ .Values.apiVersions.configmap | quote }}
+metadata:
+  name: {{  .Values.configmap.name | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+  {{- with .Values.configmap.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  {{- range $key, $value := .Values.configmap.data }}
+  {{ $key }}: |
+    {{- $value | nindent 4 }}
+  {{- end }}
+...
+{{- end }}

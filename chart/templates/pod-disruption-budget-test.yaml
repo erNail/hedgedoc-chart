@@ -1,0 +1,139 @@
+---
+suite: "pod disruption budget template"
+templates:
+  - "pod-disruption-budget.yaml"
+tests:
+  - it: "should not render pod disruption budget if disabled"
+    set:
+      podDisruptionBudget:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render pod disruption budget if enabled"
+    set:
+      podDisruptionBudget:
+        enabled: true
+    asserts:
+      - isKind:
+          of: "PodDisruptionBudget"
+
+  - it: "should render apiVersion with default value"
+    set:
+      podDisruptionBudget:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "policy/v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+      apiVersions:
+        podDisruptionBudget: "policy/v1beta1"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "policy/v1beta1"
+
+  - it: "should not render annotations if not set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        annotations: null
+    asserts:
+      - notExists:
+          path: "metadata.annotations"
+
+  - it: "should render annotations as set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        annotations:
+          example.com/annotation: "value"
+    asserts:
+      - equal:
+          path: "metadata.annotations"
+          value:
+            example.com/annotation: "value"
+
+  - it: "should render unhealthyPodEvictionPolicy"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        unhealthyPodEvictionPolicy: "AlwaysAllow"
+    asserts:
+      - equal:
+          path: "spec.unhealthyPodEvictionPolicy"
+          value: "AlwaysAllow"
+
+  - it: "should not render minAvailable if not set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: null
+    asserts:
+      - notExists:
+          path: "spec.minAvailable"
+
+  - it: "should render minAvailable with default value"
+    set:
+      podDisruptionBudget:
+        enabled: true
+    asserts:
+      - equal:
+          path: "spec.minAvailable"
+          value: 1
+
+  - it: "should render minAvailable as set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 2
+    asserts:
+      - equal:
+          path: "spec.minAvailable"
+          value: 2
+
+  - it: "should not render maxUnavailable if not set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        maxUnavailable: null
+    asserts:
+      - notExists:
+          path: "spec.maxUnavailable"
+
+  - it: "should not render maxUnavailable if minAvailable is set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 2
+        maxUnavailable: 1
+    asserts:
+      - notExists:
+          path: "spec.maxUnavailable"
+
+  - it: "should render maxUnavailable with default value"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: null
+    asserts:
+      - equal:
+          path: "spec.maxUnavailable"
+          value: 1
+
+  - it: "should render maxUnavailable as set"
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: null
+        maxUnavailable: 2
+    asserts:
+      - equal:
+          path: "spec.maxUnavailable"
+          value: 2

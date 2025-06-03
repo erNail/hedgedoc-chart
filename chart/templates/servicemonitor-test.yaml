@@ -1,0 +1,132 @@
+---
+suite: "service monitor template"
+templates:
+  - "servicemonitor.yaml"
+tests:
+  - it: "should not render service monitor if disabled"
+    set:
+      serviceMonitor:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should not render service monitor if metrics are disabled"
+    set:
+      serviceMonitor:
+        enabled: true
+      metrics:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "spec"
+
+  - it: "should render service monitor if enabled"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    asserts:
+      - isKind:
+          of: "ServiceMonitor"
+
+  - it: "should render apiVersion with default value"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "monitoring.coreos.com/v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+      apiVersions:
+        serviceMonitor: "monitoring.coreos.com/v1beta1"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "monitoring.coreos.com/v1beta1"
+
+  - it: "should render endpoints with default value"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    asserts:
+      - equal:
+          path: "spec.endpoints"
+          value:
+            - interval: "30s"
+              port: "metrics"
+              path: "/metrics"
+
+  - it: "should render endpoints as set"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          endpoints:
+            - interval: "1m"
+              port: "custom-metrics"
+              path: "/custom-metrics"
+    asserts:
+      - equal:
+          path: "spec.endpoints"
+          value:
+            - interval: "1m"
+              port: "custom-metrics"
+              path: "/custom-metrics"
+
+  - it: "should render metricRelabelings as set"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          endpoints:
+            - interval: "1m"
+              port: "custom-metrics"
+              path: "/custom-metrics"
+              metricRelabelings:
+                - sourceLabels: [__name__]
+                  action: keep
+                  regex: "up"
+    asserts:
+      - equal:
+          path: "spec.endpoints[0].metricRelabelings"
+          value:
+            - sourceLabels: [__name__]
+              action: keep
+              regex: "up"
+
+  - it: "should render relabelings as set"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          endpoints:
+            - interval: "1m"
+              port: "custom-metrics"
+              path: "/custom-metrics"
+              relabelings:
+                - sourceLabels: [__name__]
+                  action: keep
+                  regex: "up"
+    asserts:
+      - equal:
+          path: "spec.endpoints[0].relabelings"
+          value:
+            - sourceLabels: [__name__]
+              action: keep
+              regex: "up"

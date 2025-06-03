@@ -1,0 +1,26 @@
+{{- if .Values.podDisruptionBudget.enabled -}}
+---
+kind: "PodDisruptionBudget"
+apiVersion: {{ .Values.apiVersions.podDisruptionBudget | quote }}
+metadata:
+  name: {{ include "names.fullname" . | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+  {{- with .Values.podDisruptionBudget.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  unhealthyPodEvictionPolicy: {{ .Values.podDisruptionBudget.unhealthyPodEvictionPolicy | quote }}
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if and .Values.podDisruptionBudget.maxUnavailable (not .Values.podDisruptionBudget.minAvailable) }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "labels.matchLabels" . | nindent 6 }}
+...
+{{- end }}

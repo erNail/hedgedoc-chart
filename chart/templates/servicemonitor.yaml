@@ -1,0 +1,29 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled -}}
+---
+kind: "ServiceMonitor"
+apiVersion: {{ .Values.apiVersions.serviceMonitor | quote }}
+metadata:
+  name: {{ include "names.fullname" . | quote }}
+  namespace: {{ include "names.namespace" . | quote }}
+  labels:
+    {{- include "labels.commonLabels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "labels.matchLabels" . | nindent 6 }}
+  endpoints:
+    {{- range .Values.metrics.serviceMonitor.endpoints }}
+    - port: {{ .port | quote }}
+      interval: {{ .interval | quote }}
+      path: {{ .path | quote }}
+      {{- if .metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml .metricRelabelings | nindent 6 }}
+      {{- end }}
+      {{- if .relabelings }}
+      relabelings:
+        {{- toYaml .relabelings | nindent 6 }}
+      {{- end }}
+    {{- end }}
+...
+{{- end }}

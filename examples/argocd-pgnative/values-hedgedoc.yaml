@@ -1,0 +1,66 @@
+---
+resources:
+  limits:
+    cpu: "256m"
+    memory: "256Mi"
+    ephemeral-storage: "256Mi"
+  requests:
+    cpu: "256m"
+    memory: "256Mi"
+    ephemeral-storage: "256Mi"
+
+persistence:
+  enabled: true
+  size: "16Gi"
+  storageClass: "nfs-subdir-retain"
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "dns01-cloudflare-cluster-issuer-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: "hedgedoc.nailforge.dev"
+      paths:
+        - path: "/"
+          pathType: "Prefix"
+          servicePortName: "http"
+  tls:
+    - hosts:
+        - "hedgedoc.nailforge.dev"
+      secretName: "hedgedoc-tls"
+
+app:
+  env:
+    - name: "CMD_DB_USERNAME"
+      valueFrom:
+        secretKeyRef:
+          name: "hedgedoc-db-credentials"
+          key: "username"
+    - name: "CMD_DB_PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: "hedgedoc-db-credentials"
+          key: "password"
+    - name: "CMD_DB_DATABASE"
+      value: "hedgedoc"
+    - name: "CMD_DB_HOST"
+      value: "postgresql-hedgedoc-rw"
+    - name: "CMD_DB_PORT"
+      value: "5432"
+    - name: "CMD_DB_DIALECT"
+      value: "postgres"
+    - name: "CMD_LOG_LEVEL"
+      value: "info"
+    - name: "CMD_IMAGE_UPLOAD_TYPE"
+      value: "filesystem"
+    - name: "CMD_DOMAIN"
+      value: "hedgedoc.nailforge.dev"
+...

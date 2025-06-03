@@ -1,0 +1,61 @@
+---
+suite: "configmap template"
+templates:
+  - "configmap.yaml"
+tests:
+  - it: "should not render ConfigMap when disabled"
+    set:
+      configmap:
+        enabled: false
+    asserts:
+      - notExists:
+          path: "data"
+
+  - it: "should render ConfigMap when enabled"
+    set:
+      configmap:
+        enabled: true
+        data:
+          my-key: "my-value"
+          another-key: |
+            multi-line
+            value
+    asserts:
+      - isKind:
+          of: "ConfigMap"
+
+  - it: "should render annotations if set"
+    set:
+      configmap:
+        enabled: true
+        annotations:
+          foo: "bar"
+    asserts:
+      - equal:
+          path: metadata.annotations.foo
+          value: bar
+
+  - it: "should render data with default values"
+    set:
+      configmap:
+        enabled: true
+    asserts:
+      - equal:
+          path: "data"
+          value: null
+
+  - it: "should render data as set"
+    set:
+      configmap:
+        enabled: true
+        data:
+          key1: value1
+          key2: value2
+    asserts:
+      - equal:
+          path: "data"
+          value:
+            key1: |
+              value1
+            key2: |
+              value2

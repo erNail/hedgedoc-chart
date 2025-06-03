@@ -1,0 +1,460 @@
+---
+# -- The api versions of the resources created by this chart.
+#
+# Ref: https://kubernetes.io/docs/reference/using-api/deprecation-guide/
+apiVersions:
+  deployment: "apps/v1"
+  horizontalPodAutoscaler: "autoscaling/v2"
+  ingress: "networking.k8s.io/v1"
+  networkPolicy: "networking.k8s.io/v1"
+  persistentVolumeClaim: "v1"
+  podDisruptionBudget: "policy/v1"
+  service: "v1"
+  serviceAccount: "v1"
+  serviceMonitor: "monitoring.coreos.com/v1"
+  configMap: "v1"
+  statefulSet: "apps/v1"
+
+# -- Use this to override the name of the chart.
+nameOverride: ""
+
+# -- Use this to override the fullname of the chart.
+fullnameOverride: ""
+
+# -- Use this to override the namespace of the chart.
+# By default, `.Release.Namespace` is used.
+namespaceOverride: ""
+
+# -- The number of replicas of the pod.
+# Will not be used if `.Values.autoscaling.enabled` is `true`.
+# Be aware that HedgeDoc does not support running multiple instances on the same database.
+#
+# Ref: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# -- The image of the container.
+#
+# Ref: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  # -- The repository/name/url of the image.
+  repository: "quay.io/hedgedoc/hedgedoc"
+  # -- The pull policy for the image.
+  pullPolicy: "Always"
+  # -- The tag of the image. If not set, the chart's `appVersion` is used.
+  tag: ""
+
+# -- Secrets for pulling an image from a private repository.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# -- Annotations to add to the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+
+# -- Extra labels to add to the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+extraPodLabels: {}
+
+# -- Resource limits and requests.
+#
+# Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources:
+  limits:
+    cpu: "100m"
+    memory: "128Mi"
+    ephemeral-storage: "128Mi"
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+    ephemeral-storage: "128Mi"
+
+# -- The security context for the pod.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext: {}
+
+# -- The security context for the container.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  runAsUser: 10001
+  runAsGroup: 10001
+
+# -- The node selector for the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+nodeSelector: {}
+
+# -- The affinity for the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+affinity: {}
+
+# -- A host podAntiAffinity, that stops multiple pods from from being scheduled on the same node.
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+hostPodAntiAffinity:
+  # -- Whether to enable the host podAntiAffinity.
+  enabled: false
+  # -- The weight of the host podAntiAffinity.
+  weight: 50
+
+# -- The tolerations for the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: {}
+
+# -- Liveness Probe configuration.
+# Liveness probes can be dangerous. Only use them if you really need one.
+# See https://srcco.de/posts/kubernetes-liveness-probes-are-dangerous.html for more information.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe: {}
+  # httpGet:
+  #   # -- The path to use for the liveness probe.
+  #   path: "/live"
+  #   # -- The port to use for the liveness probe.
+  #   # This should reference the container ports defined at `.Values.containerPorts`.
+  #   port: "http"
+
+# -- Readiness Probe configuration.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+readinessProbe:
+  httpGet:
+    # -- The path to use for the readiness probe.
+    path: "/status"
+    # -- The port to use for the readiness probe.
+    # This should reference the container ports defined at `.Values.containerPorts`.
+    port: "http"
+
+# -- Autoscaling configuration.
+# Be aware that HedgeDoc does not support running multiple instances on the same database.
+#
+# Ref: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# -- Deployment strategy configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+strategy:
+  type: "RollingUpdate"
+
+# -- ConfigMap configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
+configmap:
+  # -- Whether to create a ConfigMap resource.
+  enabled: false
+  # -- The name of the ConfigMap.
+  # The name should reference the ConfigMap name at `.Values.volumes`.
+  name: "config"
+  # -- Annotations to add to the ConfigMap.
+  annotations: {}
+  # -- The data to add to the ConfigMap.
+  data: {}
+    # my-key: "my-value"
+    # another-key: |
+    #   multi-line
+    #   value
+
+# -- Persistent Volume Claim configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+persistence:
+  # -- Whether to enable persistence.
+  enabled: false
+  # -- The name of the persistent volume claim.
+  # The name should reference the PersistentVolumeClaim defined at `.Values.volumes`.
+  pvcName: "hedgedoc-image-uploads"
+  # -- Annotations to add to the persistent volume claim.
+  annotations: {}
+  # -- The access modes of the persistent volume claim.
+  accessModes:
+    - "ReadWriteOnce"
+  # -- The size of the persistent volume claim.
+  size: "8Gi"
+  # -- The storage class of the persistent volume claim.
+  storageClass: ""
+
+# -- Volume Mounts configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/storage/volumes/
+volumeMounts:
+  # -- Needed for the user to be able to upload images
+  # The name should reference the volume defined at `.Values.volumes`.
+  - name: "tmp"
+    mountPath: "/tmp"
+  # -- Only relevant if app.env[].CMD_IMAGE_UPLOAD_TYPE is set to "filesystem"
+  # The name should reference the volume defined at `.Values.volumes`.
+  - name: "hedgedoc-image-uploads"
+    mountPath: "/hedgedoc/public/uploads"
+
+
+# -- Volumes configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/storage/volumes/
+volumes:
+  # -- Needed for the user to be able to upload images
+  # The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
+  - name: "tmp"
+    emptyDir: {}
+  #--  Only relevant if app.env[].CMD_IMAGE_UPLOAD_TYPE is set to "filesystem"
+  # The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
+  # The PersistentVolumeClaim name should reference `.Values.persistence.pvcName`.
+  - name: "hedgedoc-image-uploads"
+    persistentVolumeClaim:
+      claimName: "hedgedoc-image-uploads"
+  # # -- The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
+  # # The ConfigMap name should reference the ConfigMap name at `.Values.configmap.name`.
+  # - name: "config-volume"
+  #   configMap:
+  #     name: "config"
+  # # -- The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
+  # - name: "mysecret"
+  #   secret:
+  #     secretName: "mysecret"
+  #     optional: false
+
+# -- Configuration for service accounts.
+#
+# Ref: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # -- Whether a service account should be created.
+  enabled: true
+  # -- Whether to mount a ServiceAccount's API credentials.
+  automount: true
+  # -- Annotations to add to the service account.
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set, a name is generated based on the chart name.
+  name: ""
+
+# -- The ports of the container.
+# To use these ports in the service(s),
+# you need to add them to `.Values.service.ports` or `.Values.metrics.service.ports`.
+#
+# If `.Values.networkPolicy.enabled` is true and `.Values.ingress.enabled` is true,
+# you need to add them to `.Values.networkPolicy.ingressController.containerPorts`.
+#
+# If `.Values.livenessProbe.enabled` is true, you need to add them to `.Values.livenessProbe`.
+#
+# If `.Values.readinessProbe.enabled` is true, you need to add them to `.Values.readinessProbe`.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/service/
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+containerPorts:
+  - name: "http"
+    port: 3000
+    protocol: "TCP"
+  - name: "metrics"
+    port: 3000
+    protocol: "TCP"
+
+# -- Service configuration.
+# A service for metrics is created separately. Check `.Values.metrics` for more information.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # -- The type of service to create.
+  #
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: "ClusterIP"
+  # -- The ports of the service.
+  # These should reference the container ports defined at `.Values.containerPorts`.
+  # When `.Values.ingress.enabled` is `true`, they should reference `.Values.ingress.hosts`.
+  #
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  ports:
+    - name: "http"
+      port: 3000
+      protocol: "TCP"
+      targetPort: "http"
+  # -- Wether to create an additional headless service.
+  # This should be enabled when using StatefulSets.
+  #
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+  enableAdditionalHeadlessService: false
+
+# -- Configuration options regarding metrics resources (ServiceMonitor, Service, etc.).
+#
+# Ref: https://github.com/prometheus-operator/prometheus-operator?tab=readme-ov-file#customresourcedefinitions
+metrics:
+  # -- Whether to create a service for metrics.
+  enabled: false
+  # -- Metrics service configuration.
+  service:
+    # -- The type of service to create.
+    #
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+    type: "ClusterIP"
+    # -- The ports of the metrics service.
+    # These should reference the container ports defined at `.Values.containerPorts`.
+    #
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+    ports:
+      - name: "metrics"
+        port: 3000
+        protocol: "TCP"
+        targetPort: "metrics"
+  # -- ServiceMonitor configuration.
+  #
+  # Ref: https://github.com/prometheus-operator/prometheus-operator?tab=readme-ov-file#customresourcedefinitions
+  serviceMonitor:
+    # -- Whether to create a ServiceMonitor resource.
+    enabled: false
+    # -- Configuration of the endpoints to scrape.
+    endpoints:
+      # -- The service port to scrape.
+      # This should reference the service ports defined at `.Values.metrics.service.ports`.
+      - port: "metrics"
+        # -- The interval at which metrics should be scraped.
+        interval: "30s"
+        # -- The metric relabelings to apply.
+        metricRelabelings: []
+        # -- The relabelings to apply.
+        relabelings: []
+        # -- The path to scrape metrics from.
+        path: "/metrics"
+
+# -- Ingress configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  # -- Whether to create an Ingress resource.
+  enabled: false
+  # -- Annotations to add to the Ingress.
+  annotations: {}
+  # kubernetes.io/ingress.class: "nginx"
+  # cert-manager.io/cluster-issuer: "dns01-cloudflare-cluster-issuer-prod"
+  # -- The class of the Ingress controller.
+  className: "nginx"
+  # -- The hosts of the Ingress.
+  hosts:
+    - host: "hedgedoc.example.com"
+      paths:
+        - path: "/"
+          pathType: "Prefix"
+          # -- The service port name to use for the Ingress.
+          # This should reference the service ports defined at `.Values.service.ports`.
+          servicePortName: "http"
+  # -- The TLS configuration for the Ingress.
+  tls:
+    - hosts:
+        - "hedgedoc.example.com"
+      secretName: "hedgedoc-tls"
+
+# -- Network Policy configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+networkPolicy:
+  # -- Whether to create a NetworkPolicy resource.
+  enabled: false
+  # -- Annotations to add to the NetworkPolicy.
+  annotations: {}
+  # -- Egress configuration.
+  egress:
+    # -- Whether to allow all egress traffic.
+    # If true, all other egress rules will be ignored.
+    allowAll: false
+    # -- Extra egress rules.
+    extraRules: []
+  ingress:
+    # -- Whether to allow all ingress traffic.
+    # If true, all other ingress rules will be ignored.
+    allowAll: false
+    # -- Extra ingress rules.
+    extraRules: []
+    # -- Configuration for allowing ingress traffic from the ingress controller.
+    # Only used if `ingress.enabled` is true.
+    ingressController:
+      # -- The container ports to allow the ingress controller to access.
+      # These should reference the container ports defined at `.Values.containerPorts`.
+      containerPorts:
+        - "http"
+      # -- The `from` rules to allow ingress traffic from the ingress controller.
+      from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: "ingress"
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: "ingress-nginx"
+    # -- Configuration for allowing ingress traffic from the metrics scraper.
+    metricsScraper:
+      # -- The `from` rules to allow ingress traffic from the metrics scraper(s).
+      from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: "kube-prometheus-stack"
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: "kube-prometheus-stack-prometheus-operator"
+  # -- Extra ingress rules.
+  extraIngess: []
+
+# -- Pod Disruption Budget configuration.
+#
+# Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+podDisruptionBudget:
+  # -- Whether to create a PodDisruptionBudget resource.
+  enabled: false
+  # -- Annotations to add to the PodDisruptionBudget.
+  annotations: {}
+  # -- The minimum number of pods that must be available. If set, maxUnavailable won't be used.
+  minAvailable: 1
+  # -- The maximum number of pods that can be unavailable. Ignored if `minAvailable` is set.
+  maxUnavailable: 1
+  # -- The Unhealthy Pod Eviction Policy.
+  unhealthyPodEvictionPolicy: "AlwaysAllow"
+
+# -- App configuration.
+app:
+  # -- Environment variables to pass to the container.
+  #
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  env:
+    # -- The database username.
+    - name: "CMD_DB_USERNAME"
+      valueFrom:
+        secretKeyRef:
+          name: "hedgedoc-db-credentials"
+          key: "username"
+    # -- The database password.
+    - name: "CMD_DB_PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: "hedgedoc-db-credentials"
+          key: "password"
+    # -- The database name.
+    - name: "CMD_DB_DATABASE"
+      value: "hedgedoc"
+    # -- The database URL without protocol and port.
+    - name: "CMD_DB_HOST"
+      value: "postgresql-hedgedoc-rw"
+    # -- The database port.
+    - name: "CMD_DB_PORT"
+      value: "5432"
+    # -- The database dialect.
+    - name: "CMD_DB_DIALECT"
+      value: "postgres"
+    # -- The log level for the application.
+    - name: "CMD_LOG_LEVEL"
+      value: "info"
+    # -- The image upload type.
+    - name: "CMD_IMAGE_UPLOAD_TYPE"
+      value: "filesystem"
+    # -- The domain of the application.
+    - name: "CMD_DOMAIN"
+      value: "hedgedoc.example.com"
+...

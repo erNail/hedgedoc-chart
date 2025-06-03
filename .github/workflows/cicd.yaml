@@ -1,0 +1,198 @@
+---
+name: "CI/CD"
+
+"on":
+  push: {}
+
+jobs:
+  test-chart-job:
+    runs-on: "ubuntu-24.04"
+    container:
+      image: "alpine/helm:3.18.1"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Install helm-unittest"
+        run: "helm plugin install https://github.com/helm-unittest/helm-unittest.git"
+      - name: "Run helm unittest"
+        run: "helm unittest -f 'templates/*-test.yaml' ./chart"
+
+  build-manifests-job:
+    runs-on: "ubuntu-24.04"
+    container:
+      image: "ghcr.io/helmfile/helmfile:v1.1.1"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Build manifests"
+        run: >
+          helmfile template -f ./chart/helmfile.yaml
+          --output-dir dist
+          --output-dir-template '{{ .OutputDir }}'
+      - name: "Upload manifests as artifact"
+        uses: "actions/upload-artifact@v4.6.2"
+        with:
+          name: "manifests"
+          path: "chart/dist/hedgedoc/templates/"
+
+  lint-kube-score-job:
+    runs-on: "ubuntu-24.04"
+    container:
+      image: "zegl/kube-score:v1.20.0"
+    needs:
+      - "build-manifests-job"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Download manifests"
+        uses: "actions/download-artifact@v4.3.0"
+        with:
+          name: "manifests"
+          path: "chart/dist/hedgedoc/templates/"
+      - name: "Lint manifests with kube-score"
+        run: "kube-score score chart/dist/hedgedoc/templates/*.yaml"
+
+  lint-kube-linter-job:
+    runs-on: "ubuntu-24.04"
+    needs:
+      - "build-manifests-job"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Download manifests"
+        uses: "actions/download-artifact@v4.3.0"
+        with:
+          name: "manifests"
+          path: "chart/dist/hedgedoc/templates/"
+      - name: "Lint manifests with kube-linter"
+        uses: "stackrox/kube-linter-action@v1.0.7"
+        with:
+          directory: "chart/dist/hedgedoc/templates/"
+
+  lint-yamllint-manifests-job:
+    runs-on: "ubuntu-24.04"
+    container:
+      image: "pipelinecomponents/yamllint:0.35.0"
+    needs:
+      - "build-manifests-job"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Download manifests"
+        uses: "actions/download-artifact@v4.3.0"
+        with:
+          name: "manifests"
+          path: "chart/dist/hedgedoc/templates/"
+      - name: "Lint manifests with yamllint"
+        run: "yamllint -c .yamllint-manifests.yaml chart/dist/hedgedoc/templates/*.yaml"
+
+  pre-commit-job:
+    runs-on: "ubuntu-24.04"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Setup python"
+        uses: "actions/setup-python@v5.5.0"
+      - name: "Run pre-commit"
+        uses: "pre-commit/action@v3.0.1"
+
+  determine-version-job:
+    runs-on: "ubuntu-24.04"
+    outputs:
+      version: "${{ steps.get_version.outputs.version }}"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+        with:
+          fetch-depth: 0
+      - name: "Setup verscout"
+        run: |
+          curl -L -o verscout.tar.gz \
+            https://github.com/erNail/verscout/releases/download/1.6.0/verscout_1.6.0_linux_amd64.tar.gz
+          tar -xzf verscout.tar.gz
+          chmod +x verscout
+      - name: "Run verscout next"
+        id: "get_version"
+        run: |
+          VERSION=$(./verscout next)
+          if [ -z "$VERSION" ]; then
+            exit 0
+          fi
+          if [ "${{ github.ref_name }}" != "${{ github.event.repository.default_branch }}" ]; then
+            VERSION="${VERSION}-rc${{github.run_id}}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  package-chart-job:
+    runs-on: "ubuntu-24.04"
+    container:
+      image: "alpine/helm:3.18.1"
+    needs:
+      - "determine-version-job"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Package Helm chart"
+        run: >-
+          helm package chart
+          --version "${{ needs.determine-version-job.outputs.version }}"
+      - name: "Upload packaged chart"
+        uses: "actions/upload-artifact@v4.6.2"
+        with:
+          name: "hedgedoc-chart"
+          path: "hedgedoc-${{ needs.determine-version-job.outputs.version }}.tgz"
+
+  publish-chart-job:
+    runs-on: "ubuntu-24.04"
+    container:
+      image: "alpine/helm:3.18.1"
+    permissions:
+      packages: "write"
+    needs:
+      - "package-chart-job"
+      - "determine-version-job"
+    if: "needs.determine-version-job.outputs.VERSION != ''"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+      - name: "Download packaged chart"
+        uses: "actions/download-artifact@v4.3.0"
+        with:
+          name: "hedgedoc-chart"
+      - name: "Login to helm registry"
+        run: "helm registry login ghcr.io --username ernail --password ${{ secrets.GITHUB_TOKEN }}"
+      - name: "Publish Helm Chart"
+        run: "helm push hedgedoc-${{ needs.determine-version-job.outputs.version }}.tgz oci://ghcr.io/ernail/charts"
+
+  release-job:
+    runs-on: "ubuntu-24.04"
+    needs:
+      - "determine-version-job"
+      - "package-chart-job"
+      - "publish-chart-job"
+    if: "needs.determine-version-job.outputs.VERSION != ''"
+    permissions:
+      contents: "write"
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v4.2.2"
+        with:
+          fetch-depth: 0
+      - name: "Download packaged chart"
+        uses: "actions/download-artifact@v4.3.0"
+        with:
+          name: "hedgedoc-chart"
+      - name: "Generate release notes"
+        uses: "orhun/git-cliff-action@v4.4.2"
+        with:
+          args: "--tag ${{ needs.determine-version-job.outputs.VERSION }} --unreleased --strip header"
+        env:
+          OUTPUT: "release-notes.md"
+      - name: "Create GitHub Release"
+        uses: "softprops/action-gh-release@v2.2.2"
+        with:
+          tag_name: "${{ needs.determine-version-job.outputs.VERSION }}"
+          body_path: "release-notes.md"
+          files: "hedgedoc-${{ needs.determine-version-job.outputs.version }}.tgz"
+          draft: true
+...

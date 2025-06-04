@@ -1,18 +1,17 @@
 ---
 apiVersion: "v2"
 name: "hedgedoc"
-description: |
-  A lightweight Helm chart for [HedgeDoc](https://github.com/hedgedoc/hedgedoc) that prioritizes
-  transparency and flexibility.
-
-  Linted with [`kube-score`](https://github.com/zegl/kube-score),
-  [`kube-linter`](https://github.com/stackrox/kube-linter)
-  and [`yamllint`](https://github.com/stackrox/kube-linter).
-
-  Tested with [`helm-unittest`](https://github.com/helm-unittest/helm-unittest).
+description: "A lightweight Helm chart for HedgeDoc that prioritizes transparency and flexibility"
 type: "application"
-version: "0.0.0"
-appVersion: "1.10.3"
+icon: "https://avatars.githubusercontent.com/u/67865462"
+keywords:
+  - "hedgedoc"
+  - "codimd"
+  - "markdown"
+  - "editor"
+maintainers:
+  - name: "ernail"
+    email: "nagel.eric.95@googlemail.com"
 annotations:
   artifacthub.io/license: "MIT"
   artifacthub.io/links: |
@@ -20,4 +19,6 @@ annotations:
       url: https://github.com/erNail/hedgedoc-chart
     - name: support
       url: https://github.com/erNail/hedgedoc-chart/issues
+version: "0.0.0"
+appVersion: "1.10.3"
 ...

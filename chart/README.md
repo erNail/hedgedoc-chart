@@ -49,7 +49,7 @@ If the default values in the [`values.yaml`](./values.yaml) fit your needs,
 you can deploy the helm chart using this command:
 
 ```shell
-helm install hedgedoc oci://registry-1.docker.io/ernail/hedgedoc \
+helm install hedgedoc oci://ghcr.io/ernail/charts/hedgedoc \
 --namespace hedgedoc \
 --create-namespace
 ```
@@ -61,7 +61,7 @@ A common way is to create your own values file,
 which overrides values of the charts default [`values.yaml`](./values.yaml):
 
 ```shell
-helm install hedgedoc oci://registry-1.docker.io/ernail/hedgedoc \
+helm install hedgedoc oci://ghcr.io/ernail/charts/hedgedoc \
 --namespace hedgedoc \
 --create-namespace \
 --values values-base.yaml
@@ -70,7 +70,7 @@ helm install hedgedoc oci://registry-1.docker.io/ernail/hedgedoc \
 You can also pass in multiple values files. For example if you need seperate configuration for your `dev` environment:
 
 ```shell
-helm install hedgedoc oci://registry-1.docker.io/ernail/hedgedoc \
+helm install hedgedoc oci://ghcr.io/ernail/charts/hedgedoc \
 --namespace hedgedoc \
 --create-namespace \
 --values values-base.yaml

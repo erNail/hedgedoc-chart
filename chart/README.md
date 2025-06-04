@@ -6,21 +6,9 @@ transparency and flexibility.
 Linted with [`kube-score`](https://github.com/zegl/kube-score),
 [`kube-linter`](https://github.com/stackrox/kube-linter)
 and [`yamllint`](https://github.com/stackrox/kube-linter).
-
 Tested with [`helm-unittest`](https://github.com/helm-unittest/helm-unittest).
 
-**Note**: This chart is mainly tested in a homelab environment, using the newest Kubernetes version available.
-Contributions and feedback from production environments and other versions are very welcome!
-
 ## Design Philosophy
-
-### No Dependencies
-
-This chart does not bundle any databases (e.g., Postgres, Valkey) as a dependency.
-While this may seem inconvenient, it keeps the chart lightweight, and ensures users actively design their setup.
-Which database should be used? Is one already deployed? Should a new one be deployed? Is it deployed via helm chart or
-operator? Which helm chart should be used? Is a managed database service used?
-These are all questions that should be answered by the user, not the chart.
 
 ### Transparency and Flexibility over Abstraction and Convenience
 
@@ -40,6 +28,14 @@ It favors transparency and flexibility over abstraction and convenience:
   and mount the ConfigMap by adapting `.Values.volumes` and `.Values.volumeMounts`.
   Another example, if you want to change the ports the application is using, you can do so. You'd have to set or adapt
   the environment variable that sets the port in `.Values.app.env`, and adapt `.Values.containerPorts` accordingly.
+
+### No Dependencies
+
+This chart does not bundle any databases (e.g., Postgres, Valkey) as a dependency.
+While this may seem inconvenient, it keeps the chart lightweight, and ensures users actively design their setup.
+Which database should be used? Is one already deployed? Should a new one be deployed? Is it deployed via helm chart or
+operator? Which helm chart should be used? Is a managed database service used?
+These are all questions that should be answered by the user, not the chart.
 
 ## Getting Started
 
@@ -108,6 +104,12 @@ Other important configuration options that should be reviewed are:
 #### Example Deployment
 
 You can find example deployments in the [`examples`](./examples) directory.
+
+## Maintainers
+
+| Name | Email | Url |
+| ---- | ------ | --- |
+| ernail | <nagel.eric.95@googlemail.com> |  |
 
 ## Values
 

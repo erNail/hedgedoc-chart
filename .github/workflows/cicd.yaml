@@ -183,7 +183,7 @@ jobs:
         with:
           name: "hedgedoc-chart"
       - name: "Generate release notes"
-        uses: "orhun/git-cliff-action@v4.4.2"
+        uses: "orhun/git-cliff-action@v4.5.0"
         with:
           args: "--tag ${{ needs.determine-version-job.outputs.VERSION }} --unreleased --strip header"
         env:

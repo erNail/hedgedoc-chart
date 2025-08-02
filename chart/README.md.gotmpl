@@ -24,8 +24,8 @@ It favors transparency and flexibility over abstraction and convenience:
   But this comes at the cost of convenience.
   For example, if you want to use a config file instead of environment variables to configure your application,
   you can do so via editing the values file.
-  But you'd have to make edits in multiple places. You'd have to set `.Values.configmap.enabled` to `true`,
-  add the config to `.Values.configmap.data`
+  But you'd have to make edits in multiple places. You'd have to set `.Values.configMap.enabled` to `true`,
+  add the config to `.Values.configMap.data`
   and mount the ConfigMap by adapting `.Values.volumes` and `.Values.volumeMounts`.
   Another example, if you want to change the ports the application is using, you can do so. You'd have to set or adapt
   the environment variable that sets the port in `.Values.app.env`, and adapt `.Values.containerPorts` accordingly.

@@ -23,8 +23,8 @@ It favors transparency and flexibility over abstraction and convenience:
   But this comes at the cost of convenience.
   For example, if you want to use a config file instead of environment variables to configure your application,
   you can do so via editing the values file.
-  But you'd have to make edits in multiple places. You'd have to set `.Values.configmap.enabled` to `true`,
-  add the config to `.Values.configmap.data`
+  But you'd have to make edits in multiple places. You'd have to set `.Values.configMap.enabled` to `true`,
+  add the config to `.Values.configMap.data`
   and mount the ConfigMap by adapting `.Values.volumes` and `.Values.volumeMounts`.
   Another example, if you want to change the ports the application is using, you can do so. You'd have to set or adapt
   the environment variable that sets the port in `.Values.app.env`, and adapt `.Values.containerPorts` accordingly.
@@ -129,11 +129,11 @@ You can find example deployments in the [`examples`](./examples) directory.
 | app.env[7] | object | `{"name":"CMD_IMAGE_UPLOAD_TYPE","value":"filesystem"}` | The image upload type. |
 | app.env[8] | object | `{"name":"CMD_DOMAIN","value":"hedgedoc.example.com"}` | The domain of the application. |
 | autoscaling | object | `{"enabled":false,"maxReplicas":100,"minReplicas":2,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":80}` | Autoscaling configuration. Be aware that HedgeDoc does not support running multiple instances on the same database.  Ref: https://kubernetes.io/docs/concepts/workloads/autoscaling/ |
-| configmap | object | `{"annotations":{},"data":{},"enabled":false,"name":"config"}` | ConfigMap configuration.  Ref: https://kubernetes.io/docs/concepts/configuration/configmap/ |
-| configmap.annotations | object | `{}` | Annotations to add to the ConfigMap. |
-| configmap.data | object | `{}` | The data to add to the ConfigMap. |
-| configmap.enabled | bool | `false` | Whether to create a ConfigMap resource. |
-| configmap.name | string | `"config"` | The name of the ConfigMap. The name should reference the ConfigMap name at `.Values.volumes`. |
+| configMap | object | `{"annotations":{},"data":{},"enabled":false,"name":"config"}` | ConfigMap configuration.  Ref: https://kubernetes.io/docs/concepts/configuration/configmap/ |
+| configMap.annotations | object | `{}` | Annotations to add to the ConfigMap. |
+| configMap.data | object | `{}` | The data to add to the ConfigMap. |
+| configMap.enabled | bool | `false` | Whether to create a ConfigMap resource. |
+| configMap.name | string | `"config"` | The name of the ConfigMap. The name should reference the ConfigMap name at `.Values.volumes`. |
 | containerPorts | list | `[{"name":"http","port":3000,"protocol":"TCP"},{"name":"metrics","port":3000,"protocol":"TCP"}]` | The ports of the container. To use these ports in the service(s), you need to add them to `.Values.service.ports` or `.Values.metrics.service.ports`.  If `.Values.networkPolicy.enabled` is true and `.Values.ingress.enabled` is true, you need to add them to `.Values.networkPolicy.ingressController.containerPorts`.  If `.Values.livenessProbe.enabled` is true, you need to add them to `.Values.livenessProbe`.  If `.Values.readinessProbe.enabled` is true, you need to add them to `.Values.readinessProbe`.  Ref: https://kubernetes.io/docs/concepts/services-networking/service/  Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/ |
 | containerSecurityContext | object | `{"readOnlyRootFilesystem":true,"runAsGroup":10001,"runAsUser":10001}` | The security context for the container.  Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
 | extraPodLabels | object | `{}` | Extra labels to add to the pod(s).  Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/ |

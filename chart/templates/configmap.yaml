@@ -1,7 +1,7 @@
 {{- if .Values.configmap.enabled }}
 ---
 kind: ConfigMap
-apiVersion: {{ .Values.apiVersions.configmap | quote }}
+apiVersion: {{ .Values.apiVersions.configMap | quote }}
 metadata:
   name: {{  .Values.configmap.name | quote }}
   namespace: {{ include "names.namespace" . | quote }}

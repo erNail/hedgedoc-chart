@@ -24,6 +24,26 @@ tests:
       - isKind:
           of: "ConfigMap"
 
+  - it: "should render apiVersion with default value"
+    set:
+      configmap:
+        enabled: true
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v1"
+
+  - it: "should render apiVersion as set"
+    set:
+      configmap:
+        enabled: true
+      apiVersions:
+        configMap: "v2"
+    asserts:
+      - equal:
+          path: "apiVersion"
+          value: "v2"
+
   - it: "should render annotations if set"
     set:
       configmap:

@@ -5,7 +5,7 @@ templates:
 tests:
   - it: "should not render ConfigMap when disabled"
     set:
-      configmap:
+      configMap:
         enabled: false
     asserts:
       - notExists:
@@ -13,7 +13,7 @@ tests:
 
   - it: "should render ConfigMap when enabled"
     set:
-      configmap:
+      configMap:
         enabled: true
         data:
           my-key: "my-value"
@@ -26,7 +26,7 @@ tests:
 
   - it: "should render apiVersion with default value"
     set:
-      configmap:
+      configMap:
         enabled: true
     asserts:
       - equal:
@@ -35,7 +35,7 @@ tests:
 
   - it: "should render apiVersion as set"
     set:
-      configmap:
+      configMap:
         enabled: true
       apiVersions:
         configMap: "v2"
@@ -46,7 +46,7 @@ tests:
 
   - it: "should render annotations if set"
     set:
-      configmap:
+      configMap:
         enabled: true
         annotations:
           foo: "bar"
@@ -57,7 +57,7 @@ tests:
 
   - it: "should render data with default values"
     set:
-      configmap:
+      configMap:
         enabled: true
     asserts:
       - equal:
@@ -66,7 +66,7 @@ tests:
 
   - it: "should render data as set"
     set:
-      configmap:
+      configMap:
         enabled: true
         data:
           key1: value1

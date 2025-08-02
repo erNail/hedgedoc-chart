@@ -152,7 +152,7 @@ strategy:
 # -- ConfigMap configuration.
 #
 # Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
-configmap:
+configMap:
   # -- Whether to create a ConfigMap resource.
   enabled: false
   # -- The name of the ConfigMap.
@@ -215,7 +215,7 @@ volumes:
     persistentVolumeClaim:
       claimName: "hedgedoc-image-uploads"
   # # -- The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
-  # # The ConfigMap name should reference the ConfigMap name at `.Values.configmap.name`.
+  # # The ConfigMap name should reference the ConfigMap name at `.Values.configMap.name`.
   # - name: "config-volume"
   #   configMap:
   #     name: "config"

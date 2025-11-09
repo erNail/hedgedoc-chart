@@ -1,5 +1,6 @@
-# Build output
+# Build artifacts
 dist/
+*.tgz
 
 # Secrets
 secret-*

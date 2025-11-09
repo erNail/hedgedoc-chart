@@ -63,4 +63,3 @@ app:
       value: "filesystem"
     - name: "CMD_DOMAIN"
       value: "hedgedoc.nailforge.dev"
-...

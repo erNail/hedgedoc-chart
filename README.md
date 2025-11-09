@@ -39,7 +39,68 @@ These are all questions that should be answered by the user, not the chart.
 
 ## Getting Started
 
-Please read the charts [`README.md`](./chart/README.md) to get started.
+### Deploy the Helm Chart
+
+If the default values in the [`values.yaml`](./values.yaml) fit your needs,
+you can deploy the helm chart using this command:
+
+```shell
+helm install hedgedoc oci://ghcr.io/ernail/charts/hedgedoc \
+--namespace hedgedoc \
+--create-namespace
+```
+
+### Configure the Helm Chart
+
+Helm provides different ways to [configure helm charts via values](https://helm.sh/docs/helm/helm_install/#synopsis).
+A common way is to create your own values file,
+which overrides values of the charts default [`values.yaml`](./values.yaml):
+
+```shell
+helm install hedgedoc oci://ghcr.io/ernail/charts/hedgedoc \
+--namespace hedgedoc \
+--create-namespace \
+--values values-base.yaml
+```
+
+You can also pass in multiple values files. For example if you need seperate configuration for your `dev` environment:
+
+```shell
+helm install hedgedoc oci://ghcr.io/ernail/charts/hedgedoc \
+--namespace hedgedoc \
+--create-namespace \
+--values values-base.yaml
+--values values-dev.yaml
+```
+
+All configuration options are documented in the [`values.yaml`](./chart/values.yaml).
+An example config is available in the [`values.yaml`](./chart/values.yaml).
+Example deployments are available in the [`examples`](./examples) directory.
+
+### Key Configuration Options
+
+#### Database
+
+The chart does not bundle any database, so you need to provide your own database.
+You can configure the database connection via the `app.env` values. An example config is available in the
+[`values.yaml`](./chart/values.yaml).
+
+#### Image Upload
+
+With the default configuration, HedgeDoc will use the local filesystem to store uploaded images.
+This behavior can be be changed via the `app.env` values. When doing so, you don't need the `volumes` and `volumeMounts`
+configured in the [`values.yaml`](./chart/values.yaml).
+
+To persist the uploaded images, `persistence.enabled` must be set to `true`.
+
+#### Miscellaneous
+
+Other important configuration options that should be reviewed are:
+
+- `app.env[].CMD_DOMAIN` - The domain where HedgeDoc is reachable.
+- `ingress` - The ingress configuration for HedgeDoc.
+- `metrics` - The metrics configuration for HedgeDoc.
+- `resources` - The resource requests and limits for the HedgeDoc container.
 
 ## Contributing
 

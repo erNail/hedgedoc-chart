@@ -27,7 +27,7 @@ namespaceOverride: ""
 
 # -- The number of replicas of the pod.
 # Will not be used if `.Values.autoscaling.enabled` is `true`.
-# Be aware that HedgeDoc does not support running multiple instances on the same database.
+# HedgeDoc does not support running multiple instances on the same database. Increase this at your own risk.
 #
 # Ref: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -133,7 +133,7 @@ readinessProbe:
     port: "http"
 
 # -- Autoscaling configuration.
-# Be aware that HedgeDoc does not support running multiple instances on the same database.
+# HedgeDoc does not support running multiple instances on the same database. Enable this at your own risk.
 #
 # Ref: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -198,7 +198,6 @@ volumeMounts:
   # The name should reference the volume defined at `.Values.volumes`.
   - name: "hedgedoc-image-uploads"
     mountPath: "/hedgedoc/public/uploads"
-
 
 # -- Volumes configuration.
 #
@@ -457,4 +456,3 @@ app:
     # -- The domain of the application.
     - name: "CMD_DOMAIN"
       value: "hedgedoc.example.com"
-...

@@ -15,4 +15,3 @@ spec:
       owner: "hedgedoc"
       secret:
         name: "hedgedoc-db-credentials"
-...

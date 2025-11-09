@@ -20,7 +20,5 @@ annotations:
     - name: support
       url: https://github.com/erNail/hedgedoc-chart/issues
 version: "0.0.0"
-
 # renovate: image=quay.io/hedgedoc/hedgedoc
 appVersion: "1.10.3"
-...

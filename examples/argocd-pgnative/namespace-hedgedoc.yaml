@@ -5,4 +5,3 @@ metadata:
   name: "hedgedoc"
   labels:
     goldilocks.fairwinds.com/enabled: "true"
-...

@@ -6,7 +6,6 @@ apiVersions:
   deployment: "apps/v1"
   horizontalPodAutoscaler: "autoscaling/v2"
   ingress: "networking.k8s.io/v1"
-  networkPolicy: "networking.k8s.io/v1"
   persistentVolumeClaim: "v1"
   podDisruptionBudget: "policy/v1"
   service: "v1"
@@ -242,9 +241,6 @@ serviceAccount:
 # To use these ports in the service(s),
 # you need to add them to `.Values.service.ports` or `.Values.metrics.service.ports`.
 #
-# If `.Values.networkPolicy.enabled` is true and `.Values.ingress.enabled` is true,
-# you need to add them to `.Values.networkPolicy.ingressController.containerPorts`.
-#
 # If `.Values.livenessProbe.enabled` is true, you need to add them to `.Values.livenessProbe`.
 #
 # If `.Values.readinessProbe.enabled` is true, you need to add them to `.Values.readinessProbe`.
@@ -352,55 +348,6 @@ ingress:
     - hosts:
         - "hedgedoc.example.com"
       secretName: "hedgedoc-tls"
-
-# -- Network Policy configuration.
-#
-# Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
-networkPolicy:
-  # -- Whether to create a NetworkPolicy resource.
-  enabled: false
-  # -- Annotations to add to the NetworkPolicy.
-  annotations: {}
-  # -- Egress configuration.
-  egress:
-    # -- Whether to allow all egress traffic.
-    # If true, all other egress rules will be ignored.
-    allowAll: false
-    # -- Extra egress rules.
-    extraRules: []
-  ingress:
-    # -- Whether to allow all ingress traffic.
-    # If true, all other ingress rules will be ignored.
-    allowAll: false
-    # -- Extra ingress rules.
-    extraRules: []
-    # -- Configuration for allowing ingress traffic from the ingress controller.
-    # Only used if `ingress.enabled` is true.
-    ingressController:
-      # -- The container ports to allow the ingress controller to access.
-      # These should reference the container ports defined at `.Values.containerPorts`.
-      containerPorts:
-        - "http"
-      # -- The `from` rules to allow ingress traffic from the ingress controller.
-      from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: "ingress"
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: "ingress-nginx"
-    # -- Configuration for allowing ingress traffic from the metrics scraper.
-    metricsScraper:
-      # -- The `from` rules to allow ingress traffic from the metrics scraper(s).
-      from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: "kube-prometheus-stack"
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: "kube-prometheus-stack-prometheus-operator"
-  # -- Extra ingress rules.
-  extraIngess: []
 
 # -- Pod Disruption Budget configuration.
 #

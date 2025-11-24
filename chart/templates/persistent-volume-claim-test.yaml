@@ -5,24 +5,30 @@ templates:
 tests:
   - it: "should not render persistent volume claim if disabled"
     set:
-      persistence:
-        enabled: false
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: false
     asserts:
       - notExists:
           path: "spec"
 
   - it: "should render persistent volume claim if enabled"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
     asserts:
       - isKind:
           of: "PersistentVolumeClaim"
 
   - it: "should render apiVersion with default value"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
     asserts:
       - equal:
           path: "apiVersion"
@@ -30,8 +36,10 @@ tests:
 
   - it: "should render apiVersion as set"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
       apiVersions:
         persistentVolumeClaim: "v1beta1"
     asserts:
@@ -41,8 +49,10 @@ tests:
 
   - it: "should render name with default value"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
     asserts:
       - equal:
           path: "metadata.name"
@@ -50,9 +60,11 @@ tests:
 
   - it: "should render name as set"
     set:
-      persistence:
-        enabled: true
-        pvcName: "custom-pvc-name"
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
+            pvcName: "custom-pvc-name"
     asserts:
       - equal:
           path: "metadata.name"
@@ -60,19 +72,23 @@ tests:
 
   - it: "should not render annotations if not set"
     set:
-      persistence:
-        enabled: true
-        annotations: null
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
+            annotations: null
     asserts:
       - notExists:
           path: "metadata.annotations"
 
   - it: "should render annotations as set"
     set:
-      persistence:
-        enabled: true
-        annotations:
-          example.com/annotation: "value"
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
+            annotations:
+              example.com/annotation: "value"
     asserts:
       - equal:
           path: "metadata.annotations"
@@ -81,8 +97,10 @@ tests:
 
   - it: "should render accessModes with default value"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
     asserts:
       - equal:
           path: "spec.accessModes"
@@ -91,10 +109,12 @@ tests:
 
   - it: "should render accessModes as set"
     set:
-      persistence:
-        enabled: true
-        accessModes:
-          - "ReadWriteMany"
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
+            accessModes:
+              - "ReadWriteMany"
     asserts:
       - equal:
           path: "spec.accessModes"
@@ -103,18 +123,22 @@ tests:
 
   - it: "should render storage request with default value"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
     asserts:
       - equal:
           path: "spec.resources.requests.storage"
-          value: "8Gi"
+          value: "1Gi"
 
   - it: "should render storage request as set"
     set:
-      persistence:
-        enabled: true
-        size: "10Gi"
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
+            size: "10Gi"
     asserts:
       - equal:
           path: "spec.resources.requests.storage"
@@ -122,8 +146,10 @@ tests:
 
   - it: "should render storage class name with default value"
     set:
-      persistence:
-        enabled: true
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
     asserts:
       - equal:
           path: "spec.storageClassName"
@@ -131,11 +157,12 @@ tests:
 
   - it: "should render storage class name as set"
     set:
-      persistence:
-        enabled: true
-        storageClass: "standard"
+      volumeConfig:
+        imageUploads:
+          persistence:
+            enabled: true
+            storageClass: "standard"
     asserts:
       - equal:
           path: "spec.storageClassName"
           value: "standard"
-...

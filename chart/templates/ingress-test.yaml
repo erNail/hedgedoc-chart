@@ -162,4 +162,3 @@ tests:
                         name: "hedgedoc"
                         port:
                           name: "custom-service-port"
-...

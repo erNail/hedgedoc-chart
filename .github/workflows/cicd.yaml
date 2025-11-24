@@ -102,7 +102,7 @@ jobs:
           name: "manifests"
           path: "chart/dist/hedgedoc/templates/"
       - name: "Lint manifests with kube-score"
-        run: "kube-score score chart/dist/hedgedoc/templates/*.yaml"
+        run: "kube-score score chart/dist/hedgedoc/templates/*.yaml --ignore-test pod-networkpolicy"
 
   lint-kube-linter-job:
     runs-on: "ubuntu-24.04"

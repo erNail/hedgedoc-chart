@@ -52,8 +52,8 @@ tests:
           foo: "bar"
     asserts:
       - equal:
-          path: metadata.annotations.foo
-          value: bar
+          path: "metadata.annotations.foo"
+          value: "bar"
 
   - it: "should render data with default values"
     set:
@@ -69,8 +69,8 @@ tests:
       configMap:
         enabled: true
         data:
-          key1: value1
-          key2: value2
+          key1: "value1"
+          key2: "value2"
     asserts:
       - equal:
           path: "data"

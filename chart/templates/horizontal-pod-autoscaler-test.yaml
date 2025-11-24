@@ -50,7 +50,7 @@ tests:
           path: "spec.scaleTargetRef.name"
           value: "hedgedoc"
 
-  - it:  "should render minReplicas with default value"
+  - it: "should render minReplicas with default value"
     set:
       autoscaling:
         enabled: true
@@ -126,4 +126,3 @@ tests:
       - equal:
           path: "spec.metrics[1].resource.target.averageUtilization"
           value: 90
-...

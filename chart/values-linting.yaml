@@ -26,6 +26,3 @@ serviceAccount:
 
 service:
   enableAdditionalHeadlessService: true
-
-configMap:
-  enabled: true

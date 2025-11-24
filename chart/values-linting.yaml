@@ -4,8 +4,10 @@ replicaCount: 2
 autoscaling:
   enabled: true
 
-persistence:
-  enabled: true
+volumeConfig:
+  imageUploads:
+    persistence:
+      enabled: true
 
 ingress:
   enabled: true

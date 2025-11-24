@@ -58,6 +58,7 @@ podAnnotations: {}
 extraPodLabels: {}
 
 # -- Resource limits and requests.
+# You might want to set `limits.cpu` to `null`: https://home.robusta.dev/blog/stop-using-cpu-limits
 #
 # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 resources:
@@ -166,62 +167,42 @@ configMap:
     #   multi-line
     #   value
 
-# -- Persistent Volume Claim configuration.
-#
-# Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-persistence:
-  # -- Whether to enable persistence.
-  enabled: false
-  # -- The name of the persistent volume claim.
-  # The name should reference the PersistentVolumeClaim defined at `.Values.volumes`.
-  pvcName: "hedgedoc-image-uploads"
-  # -- Annotations to add to the persistent volume claim.
-  annotations: {}
-  # -- The access modes of the persistent volume claim.
-  accessModes:
-    - "ReadWriteOnce"
-  # -- The size of the persistent volume claim.
-  size: "8Gi"
-  # -- The storage class of the persistent volume claim.
-  storageClass: ""
-
-# -- Volume Mounts configuration.
+# -- Configures the pods `volumes` and `volumeMounts`, as well as the Persistent Volume Claims
 #
 # Ref: https://kubernetes.io/docs/concepts/storage/volumes/
-volumeMounts:
-  # -- Needed for the user to be able to upload images
-  # The name should reference the volume defined at `.Values.volumes`.
-  - name: "tmp"
-    mountPath: "/tmp"
-  # -- Only relevant if app.env[].CMD_IMAGE_UPLOAD_TYPE is set to "filesystem"
-  # The name should reference the volume defined at `.Values.volumes`.
-  - name: "hedgedoc-image-uploads"
-    mountPath: "/hedgedoc/public/uploads"
-
-# -- Volumes configuration.
-#
-# Ref: https://kubernetes.io/docs/concepts/storage/volumes/
-volumes:
-  # -- Needed for the user to be able to upload images
-  # The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
-  - name: "tmp"
-    emptyDir: {}
-  #--  Only relevant if app.env[].CMD_IMAGE_UPLOAD_TYPE is set to "filesystem"
-  # The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
-  # The PersistentVolumeClaim name should reference `.Values.persistence.pvcName`.
-  - name: "hedgedoc-image-uploads"
-    persistentVolumeClaim:
-      claimName: "hedgedoc-image-uploads"
-  # # -- The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
-  # # The ConfigMap name should reference the ConfigMap name at `.Values.configMap.name`.
-  # - name: "config-volume"
-  #   configMap:
-  #     name: "config"
-  # # -- The volume name should reference the volumeMounts defined at `.Values.volumeMounts`.
-  # - name: "mysecret"
-  #   secret:
-  #     secretName: "mysecret"
-  #     optional: false
+volumeConfig:
+  imageUploads:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "hedgedoc-image-uploads"
+      mountPath: "/hedgedoc/public/uploads"
+    # -- Will be added to the pods `volumes` if `persistence.enabled` is `false`.
+    volume:
+      name: "hedgedoc-image-uploads"
+      emptyDir: {}
+    # -- Persistent Volume Claim configuration
+    persistence:
+      enabled: false
+      pvcName: "hedgedoc-image-uploads"
+      annotations: {}
+      accessModes:
+        - "ReadWriteOnce"
+      size: "1Gi"
+      storageClass: ""
+      # -- Will be added to the pods `volumes` if `persistence.enabled` is `true`.
+      volume:
+        name: "hedgedoc-image-uploads"
+        persistentVolumeClaim:
+          claimName: "hedgedoc-image-uploads"
+  tmp:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "tmp"
+      mountPath: "/tmp"
+    # -- Will be added to the pods `volumes`.
+    volume:
+      name: "tmp"
+      emptyDir: {}
 
 # -- Configuration for service accounts.
 #

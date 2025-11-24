@@ -1,24 +1,24 @@
-{{- if .Values.persistence.enabled -}}
+{{- if .Values.volumeConfig.imageUploads.persistence.enabled -}}
 ---
 kind: "PersistentVolumeClaim"
 apiVersion: {{ .Values.apiVersions.persistentVolumeClaim | quote }}
 metadata:
-  name: {{ .Values.persistence.pvcName | quote }}
+  name: {{ .Values.volumeConfig.imageUploads.persistence.pvcName | quote }}
   namespace: {{ include "names.namespace" . | quote }}
   labels:
     {{- include "labels.commonLabels" . | nindent 4 }}
-  {{- with .Values.persistence.annotations }}
+  {{- with .Values.volumeConfig.imageUploads.persistence.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   accessModes:
-  {{- range .Values.persistence.accessModes }}
+  {{- range .Values.volumeConfig.imageUploads.persistence.accessModes }}
     - {{ . | quote}}
   {{- end }}
   resources:
     requests:
-      storage: {{ .Values.persistence.size | quote }}
-  storageClassName: {{ .Values.persistence.storageClass | quote }}
+      storage: {{ .Values.volumeConfig.imageUploads.persistence.size | quote }}
+  storageClassName: {{ .Values.volumeConfig.imageUploads.persistence.storageClass | quote }}
 ...
 {{- end }}

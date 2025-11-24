@@ -153,7 +153,7 @@ strategy:
 # Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
 configMap:
   # -- Whether to create a ConfigMap resource.
-  enabled: false
+  enabled: true
   # -- The name of the ConfigMap.
   # The name should reference the ConfigMap name at `.Values.volumes`.
   name: "config"

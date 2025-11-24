@@ -1,10 +1,11 @@
 ---
 extends: "default"
 
-ignore:
-  - "chart/templates/"
-  - "sealed-secret*"
-  - "chart/dist/"
+ignore: |
+  chart/templates/
+  sealed-secret*
+  chart/dist/
+  !chart/templates/*-test.yaml
 
 rules:
   line-length:

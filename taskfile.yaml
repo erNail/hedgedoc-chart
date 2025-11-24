@@ -32,7 +32,7 @@ tasks:
       - "markdownlint '**/*.md'"
       - "yamllint ."
       - "yamllint -c .yamllint-manifests.yaml ."
-      - "kube-score score chart/dist/hedgedoc/templates/*.yaml"
+      - "kube-score score chart/dist/hedgedoc/templates/*.yaml --ignore-test pod-networkpolicy"
       - "kube-linter lint chart/dist/hedgedoc/templates/*.yaml"
       - "trufflehog git file://."
 

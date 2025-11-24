@@ -98,11 +98,11 @@ tests:
       - equal:
           path: "spec.template.metadata.labels"
           value:
-            app.kubernetes.io/instance: hedgedoc
-            app.kubernetes.io/managed-by: Helm
-            app.kubernetes.io/name: hedgedoc
-            app.kubernetes.io/version: 0.0.0
-            helm.sh/chart: hedgedoc-0.0.0
+            app.kubernetes.io/instance: "hedgedoc"
+            app.kubernetes.io/managed-by: "Helm"
+            app.kubernetes.io/name: "hedgedoc"
+            app.kubernetes.io/version: "0.0.0"
+            helm.sh/chart: "hedgedoc-0.0.0"
 
   - it: "should render extraPodLabels as set"
     chart:
@@ -116,12 +116,12 @@ tests:
       - equal:
           path: "spec.template.metadata.labels"
           value:
-            app.kubernetes.io/instance: hedgedoc
-            app.kubernetes.io/managed-by: Helm
-            app.kubernetes.io/name: hedgedoc
-            app.kubernetes.io/version: 0.0.0
-            helm.sh/chart: hedgedoc-0.0.0
-            test: test
+            app.kubernetes.io/instance: "hedgedoc"
+            app.kubernetes.io/managed-by: "Helm"
+            app.kubernetes.io/name: "hedgedoc"
+            app.kubernetes.io/version: "0.0.0"
+            helm.sh/chart: "hedgedoc-0.0.0"
+            test: "test"
 
   - it: "should not render imagePullSecrets with default value"
     asserts:
@@ -352,10 +352,10 @@ tests:
       - equal:
           path: "spec.template.spec.containers[0].volumeMounts"
           value:
-            - mountPath: /tmp
-              name: tmp
-            - mountPath: /hedgedoc/public/uploads
-              name: hedgedoc-image-uploads
+            - name: "hedgedoc-image-uploads"
+              mountPath: "/hedgedoc/public/uploads"
+            - name: "tmp"
+              mountPath: "/tmp"
 
   - it: "should render volumeMounts as set"
     set:
@@ -411,7 +411,7 @@ tests:
       - equal:
           path: "spec.template.spec.nodeSelector"
           value:
-              disktype: "ssd"
+            disktype: "ssd"
 
   - it: "should not render affinity with default value"
     asserts:
@@ -435,8 +435,8 @@ tests:
                   podAffinityTerm:
                     labelSelector:
                       matchLabels:
-                        app.kubernetes.io/instance: hedgedoc
-                        app.kubernetes.io/name: hedgedoc
+                        app.kubernetes.io/instance: "hedgedoc"
+                        app.kubernetes.io/name: "hedgedoc"
                     topologyKey: "kubernetes.io/hostname"
 
   - it: "should render affinity as set"
@@ -447,11 +447,11 @@ tests:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
+              - matchExpressions:
+                  - key: "kubernetes.io/os"
+                    operator: "In"
+                    values:
+                      - "linux"
     asserts:
       - equal:
           path: "spec.template.spec.affinity"
@@ -459,11 +459,11 @@ tests:
             nodeAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
-                - matchExpressions:
-                  - key: kubernetes.io/os
-                    operator: In
-                    values:
-                    - linux
+                  - matchExpressions:
+                      - key: "kubernetes.io/os"
+                        operator: "In"
+                        values:
+                          - "linux"
 
   - it: "should not render tolerations with default value"
     asserts:
@@ -485,4 +485,3 @@ tests:
               operator: "Equal"
               value: "value"
               effect: "NoSchedule"
-...

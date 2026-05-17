@@ -33,6 +33,10 @@ module.exports = {
       matchDatasources: ["docker"],
       pinDigests: false,
     },
+    {
+      matchFileNames: ["Chart.yaml"],
+      semanticCommitType: "fix",
+    },
   ],
   customManagers: [
     {

@@ -52,6 +52,7 @@ jobs:
     runs-on: "ubuntu-24.04"
     needs:
       - "determine-version-job"
+    if: "needs.determine-version-job.outputs.VERSION != ''"
     permissions:
       contents: "write"
       packages: "write"

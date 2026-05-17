@@ -62,12 +62,11 @@ extraPodLabels: {}
 #
 # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 resources:
-  limits:
+  requests:
     cpu: "100m"
     memory: "128Mi"
     ephemeral-storage: "128Mi"
-  requests:
-    cpu: "100m"
+  limits:
     memory: "128Mi"
     ephemeral-storage: "128Mi"
 

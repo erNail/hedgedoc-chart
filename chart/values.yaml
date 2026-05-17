@@ -383,3 +383,7 @@ app:
     # -- The domain of the application.
     - name: "CMD_DOMAIN"
       value: "hedgedoc.example.com"
+  # -- Arguments to pass to the containers entrypoint.
+  #
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
+  args: []

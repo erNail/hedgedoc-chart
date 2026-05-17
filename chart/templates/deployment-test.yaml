@@ -179,6 +179,22 @@ tests:
             - name: "ENV_VAR"
               value: "value"
 
+  - it: "should not render container args with default value"
+    asserts:
+      - notExists:
+          path: "spec.template.spec.containers[0].args"
+
+  - it: "should render container args as set"
+    set:
+      app:
+        args:
+          - "--arg1=value1"
+    asserts:
+      - equal:
+          path: "spec.template.spec.containers[0].args"
+          value:
+            - "--arg1=value1"
+
   - it: "should render container securityContext with default value"
     asserts:
       - equal:

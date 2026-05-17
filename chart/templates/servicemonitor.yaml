@@ -12,18 +12,6 @@ spec:
     matchLabels:
       {{- include "labels.matchLabels" . | nindent 6 }}
   endpoints:
-    {{- range .Values.metrics.serviceMonitor.endpoints }}
-    - port: {{ .port | quote }}
-      interval: {{ .interval | quote }}
-      path: {{ .path | quote }}
-      {{- if .metricRelabelings }}
-      metricRelabelings:
-        {{- toYaml .metricRelabelings | nindent 6 }}
-      {{- end }}
-      {{- if .relabelings }}
-      relabelings:
-        {{- toYaml .relabelings | nindent 6 }}
-      {{- end }}
-    {{- end }}
+    {{- toYaml .Values.metrics.serviceMonitor.endpoints | nindent 4 }}
 ...
 {{- end }}

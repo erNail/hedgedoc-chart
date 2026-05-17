@@ -68,6 +68,8 @@ tests:
             - interval: "30s"
               port: "metrics"
               path: "/metrics"
+              metricRelabelings: []
+              relabelings: []
 
   - it: "should render endpoints as set"
     set:

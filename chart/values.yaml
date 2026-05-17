@@ -73,7 +73,8 @@ resources:
 # -- The security context for the pod.
 #
 # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-podSecurityContext: {}
+podSecurityContext:
+  fsGroup: 10001
 
 # -- The security context for the container.
 #

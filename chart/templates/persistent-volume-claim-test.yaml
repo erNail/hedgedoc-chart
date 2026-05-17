@@ -166,3 +166,16 @@ tests:
       - equal:
           path: "spec.storageClassName"
           value: "standard"
+
+  - it: "should render multiple persistent volume claims if multiple volumes configured"
+    set:
+      volumeConfig:
+        data:
+          persistence:
+            enabled: true
+        logs:
+          persistence:
+            enabled: true
+    asserts:
+      - hasDocuments:
+          count: 2

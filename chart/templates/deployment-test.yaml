@@ -40,12 +40,10 @@ tests:
           path: "spec.replicas"
 
   - it: "should render default replicaCount"
-    set:
-      replicaCount: 2
     asserts:
       - equal:
           path: "spec.replicas"
-          value: 2
+          value: 1
 
   - it: "should render set replicaCount"
     set:

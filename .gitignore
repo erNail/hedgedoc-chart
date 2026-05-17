@@ -1,6 +1,8 @@
 # Build artifacts
 dist/
 *.tgz
+release-notes.md
+chart/README.md
 
 # Secrets
 secret-*

@@ -108,38 +108,24 @@ Please check the [`CONTRIBUTING.md`](./CONTRIBUTING.md) to learn how to contribu
 
 ## Development
 
-### Installing dependencies
+### Install Dependencies
 
-You can install all required dependencies via `Task` and `Homebrew`
-
-```shell
-brew install go-task
-task install
-```
-
-If you'd like to use other tools,
-you can find all dependencies and relevant commands in the [`taskfile.yaml`](./taskfile.yaml)
-
-### Rendering the Helm Chart
+All dependencies can be installed via `mise`.
 
 ```shell
-task render
+mise install
 ```
 
-### Testing the Helm Chart
+If you are not using `mise`, check the [`mise.toml`](./mise.toml) for the required dependencies.
+
+### Run Tasks
 
 ```shell
-task test
+# Find available tasks
+mise tasks
+
+# Run a task
+mise run <TASK_NAME>
 ```
 
-### Running linters
-
-```shell
-task lint
-```
-
-### Generating documentation
-
-```shell
-task docs
-```
+If you are not using `mise`, check the [`mise.toml`](./mise.toml) for the commands.

@@ -1,0 +1,123 @@
+[tools]
+actionlint = "1.7.12"
+helm = "4.2.0"
+helmfile = "1.5.1"
+"github:stackrox/kube-linter" = "0.8.3"
+kube-score = "1.20.0"
+markdownlint-cli2 = "0.22.1"
+osv-scanner = "2.3.8"
+prettier = "3.8.3"
+trufflehog = "3.95.3"
+yamllint = "1.38.0"
+tombi = "0.11.4"
+"github:ernail/verscout" = "2.1.0"
+git-cliff = "2.13.1"
+
+[tasks."helmfile:template"]
+description = "Render manifests with helmfile"
+run = """
+helmfile template -f ./chart/helmfile.yaml \
+--output-dir dist \
+--output-dir-template '{{"{{ .OutputDir }}"}}'
+"""
+
+[tasks."lint:yamllint"]
+description = "Run yamllint"
+run = "yamllint ."
+
+[tasks."lint:yamllint-manifests"]
+description = "Run yamllint with manifest-specific rules"
+# depends = ["helmfile:template"]
+run = "yamllint -c .yamllint-manifests.yaml ./"
+
+[tasks."lint:prettier"]
+description = "Run prettier"
+run = "prettier --write ."
+
+[tasks."lint:tombi-format"]
+description = "Run tombi format"
+run = "tombi format"
+
+[tasks."lint:tombi-lint"]
+description = "Run tombi lint"
+run = "tombi lint"
+
+[tasks."lint:markdownlint"]
+description = "Run markdownlint"
+run = "markdownlint-cli2 **.md"
+
+[tasks."lint:actionlint"]
+description = "Run actionlint"
+run = "actionlint"
+
+[tasks."lint:trufflehog"]
+description = "Run trufflehog"
+depends = ["helmfile:template"]
+run = "trufflehog git file://."
+
+[tasks."lint:kube-score"]
+description = "Run kube-score"
+depends = ["helmfile:template"]
+run = "kube-score score chart/dist/hedgedoc/templates/*.yaml --ignore-test pod-networkpolicy --ignore-container-cpu-limit"
+
+[tasks."lint:kube-linter"]
+description = "Run kube-linter"
+depends = ["helmfile:template"]
+run = "kube-linter lint chart/dist/hedgedoc/templates/*.yaml"
+
+[tasks."lint:helm"]
+description = "Run helm lint"
+run = "helm lint ./chart"
+
+[tasks.lint]
+description = "Run linting and formatting"
+run = """
+BEFORE=$(git diff)
+mise run lint:*
+AFTER=$(git diff)
+[ "$BEFORE" = "$AFTER" ] || exit 1
+"""
+
+[tasks.test]
+description = "Run tests"
+run = [
+  "helm plugin install https://github.com/helm-unittest/helm-unittest.git --verify=false || true",
+  "helm unittest -f 'templates/*-test.yaml' ./chart"
+]
+
+[tasks.build]
+usage = """
+flag "--version <version>" help="The version to use for packaging the chart" default="0.0.0"
+"""
+description = "Build the project"
+run = [
+  "cp ./README.md ./chart/README.md",
+  "helm package chart --version {{ usage.version }}",
+]
+
+[tasks."changelog:generate"]
+description = "Generate changelog with git-cliff"
+usage = """
+flag "--version <version>" help="The version to use for generating the changelog" default="0.0.0"
+"""
+run = "git-cliff --tag {{ usage.version }} --unreleased --strip header --output release-notes.md"
+
+[tasks.pre-commit]
+description = "Run pre-commit checks"
+run = [
+  { tasks = ["lint", "test", "build"] },
+]
+
+[tasks."release:prepare"]
+description = "Prepare release artifacts"
+usage = """
+flag "--version <version>" help="The version to use for the release" default="0.0.0"
+"""
+run = """
+mise run build --version {{ usage.version }}
+mise run changelog:generate --version {{ usage.version }}
+"""
+
+[tasks."verscout"]
+description = "Determine next version with verscout"
+run = "verscout next"

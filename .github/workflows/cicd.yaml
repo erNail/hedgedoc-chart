@@ -5,133 +5,20 @@ name: "CI/CD"
   push: {}
 
 jobs:
-  build-manifests-job:
+  pre-commit:
     runs-on: "ubuntu-24.04"
-    container:
-      image: "ghcr.io/helmfile/helmfile:v1.1.9@sha256:0bae88dc10b2c21794b6a07d0b47de9e93f75425ffbe27f22d5b65a15eb9b781"
     steps:
       - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Build manifests"
-        run: >
-          helmfile template -f ./chart/helmfile.yaml
-          --output-dir dist
-          --output-dir-template '{{ .OutputDir }}'
-      - name: "Upload manifests as artifact"
-        uses: "actions/upload-artifact@v5.0.0"
+        uses: "actions/checkout@v6.0.2"
+      - name: "Cache mise tools"
+        uses: "actions/cache@v5.0.5"
         with:
-          name: "manifests"
-          path: "chart/dist/hedgedoc/templates/"
-
-  lint-prettier-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "tmknom/prettier:3.6.2"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Run Prettier"
-        run: "prettier --check ."
-
-  lint-markdownlint-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "ghcr.io/igorshubovych/markdownlint-cli:v0.45.0"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Lint Markdown files"
-        run: "markdownlint '**/*.md'"
-
-  lint-yamllint-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "pipelinecomponents/yamllint:0.35.9"
-    needs:
-      - "build-manifests-job"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Download manifests"
-        uses: "actions/download-artifact@v6.0.0"
-        with:
-          name: "manifests"
-          path: "chart/dist/hedgedoc/templates/"
-      - name: "Lint manifests with yamllint"
-        run: "yamllint ."
-
-  scan-trufflehog-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "trufflesecurity/trufflehog:3.90.13"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Run TruffleHog scan"
-        run: "trufflehog git file://."
-
-  lint-yamllint-manifests-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "pipelinecomponents/yamllint:0.35.9"
-    needs:
-      - "build-manifests-job"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Download manifests"
-        uses: "actions/download-artifact@v6.0.0"
-        with:
-          name: "manifests"
-          path: "chart/dist/hedgedoc/templates/"
-      - name: "Lint yaml files"
-        run: "yamllint -c .yamllint-manifests.yaml ."
-
-  lint-kube-score-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "zegl/kube-score:v1.20.0"
-    needs:
-      - "build-manifests-job"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Download manifests"
-        uses: "actions/download-artifact@v6.0.0"
-        with:
-          name: "manifests"
-          path: "chart/dist/hedgedoc/templates/"
-      - name: "Lint manifests with kube-score"
-        run: "kube-score score chart/dist/hedgedoc/templates/*.yaml --ignore-test pod-networkpolicy"
-
-  lint-kube-linter-job:
-    runs-on: "ubuntu-24.04"
-    needs:
-      - "build-manifests-job"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Download manifests"
-        uses: "actions/download-artifact@v6.0.0"
-        with:
-          name: "manifests"
-          path: "chart/dist/hedgedoc/templates/"
-      - name: "Lint manifests with kube-linter"
-        uses: "stackrox/kube-linter-action@v1.0.7"
-        with:
-          directory: "chart/dist/hedgedoc/templates/"
-
-  test-chart-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "alpine/helm:3.19.0@sha256:aef9b56f64e866207d9591d0abd8f6d767b36aadd12edf68f8a719716d9d29c9"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Install helm-unittest"
-        run: "helm plugin install https://github.com/helm-unittest/helm-unittest.git"
-      - name: "Run helm unittest"
-        run: "helm unittest -f 'templates/*-test.yaml' ./chart"
+          path: "${{ github.workspace }}/.cache/mise"
+          key: "${{ hashFiles('mise.toml') }}"
+      - name: "Setup mise"
+        uses: "jdx/mise-action@v4.0.1"
+      - name: "Run linting, building, tests"
+        run: "mise run pre-commit"
 
   determine-version-job:
     runs-on: "ubuntu-24.04"
@@ -139,94 +26,53 @@ jobs:
       version: "${{ steps.get_version.outputs.version }}"
     steps:
       - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
+        uses: "actions/checkout@v6.0.2"
         with:
           fetch-depth: 0
-      - name: "Setup verscout"
-        run: |
-          curl -L -o verscout.tar.gz \
-            https://github.com/erNail/verscout/releases/download/1.6.0/verscout_1.6.0_linux_amd64.tar.gz
-          tar -xzf verscout.tar.gz
-          chmod +x verscout
+      - name: "Cache mise tools"
+        uses: "actions/cache@v5.0.5"
+        with:
+          path: "${{ github.workspace }}/.cache/mise"
+          key: "${{ hashFiles('mise.toml') }}"
+      - name: "Setup mise"
+        uses: "jdx/mise-action@v4.0.1"
       - name: "Run verscout next"
         id: "get_version"
         run: |
-          VERSION=$(./verscout next)
+          VERSION=$(mise run verscout)
           if [ -z "$VERSION" ]; then
             exit 0
           fi
           if [ "${{ github.ref_name }}" != "${{ github.event.repository.default_branch }}" ]; then
-            VERSION="${VERSION}-rc${{github.run_id}}"
+            VERSION="${VERSION}-rc"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-  package-chart-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "alpine/helm:3.19.0@sha256:aef9b56f64e866207d9591d0abd8f6d767b36aadd12edf68f8a719716d9d29c9"
-    needs:
-      - "determine-version-job"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Copy README.md to chart directory"
-        run: "cp ./README.md ./chart/README.md"
-      - name: "Package Helm chart"
-        run: >-
-          helm package chart
-          --version "${{ needs.determine-version-job.outputs.version }}"
-      - name: "Upload packaged chart"
-        uses: "actions/upload-artifact@v5.0.0"
-        with:
-          name: "hedgedoc-chart"
-          path: "hedgedoc-${{ needs.determine-version-job.outputs.version }}.tgz"
-
-  publish-chart-job:
-    runs-on: "ubuntu-24.04"
-    container:
-      image: "alpine/helm:3.19.0@sha256:aef9b56f64e866207d9591d0abd8f6d767b36aadd12edf68f8a719716d9d29c9"
-    permissions:
-      packages: "write"
-    needs:
-      - "package-chart-job"
-      - "determine-version-job"
-    if: "needs.determine-version-job.outputs.VERSION != ''"
-    steps:
-      - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
-      - name: "Download packaged chart"
-        uses: "actions/download-artifact@v6.0.0"
-        with:
-          name: "hedgedoc-chart"
-      - name: "Login to helm registry"
-        run: "helm registry login ghcr.io --username ernail --password ${{ secrets.GITHUB_TOKEN }}"
-      - name: "Publish Helm Chart"
-        run: "helm push hedgedoc-${{ needs.determine-version-job.outputs.version }}.tgz oci://ghcr.io/ernail/charts"
 
   release-job:
     runs-on: "ubuntu-24.04"
     needs:
       - "determine-version-job"
-      - "package-chart-job"
-      - "publish-chart-job"
-    if: "needs.determine-version-job.outputs.VERSION != ''"
     permissions:
       contents: "write"
+      packages: "write"
     steps:
       - name: "Check out repository"
-        uses: "actions/checkout@v5.0.0"
+        uses: "actions/checkout@v6.0.2"
         with:
           fetch-depth: 0
-      - name: "Download packaged chart"
-        uses: "actions/download-artifact@v6.0.0"
+      - name: "Cache mise tools"
+        uses: "actions/cache@v5.0.5"
         with:
-          name: "hedgedoc-chart"
-      - name: "Generate release notes"
-        uses: "orhun/git-cliff-action@v4.6.0"
-        with:
-          args: "--tag ${{ needs.determine-version-job.outputs.VERSION }} --unreleased --strip header"
-        env:
-          OUTPUT: "release-notes.md"
+          path: "${{ github.workspace }}/.cache/mise"
+          key: "${{ hashFiles('mise.toml') }}"
+      - name: "Setup mise"
+        uses: "jdx/mise-action@v4.0.1"
+      - name: "Prepare release artifacts"
+        run: "mise run release:prepare --version ${{ needs.determine-version-job.outputs.version }}"
+      - name: "Login to helm registry"
+        run: "helm registry login ghcr.io --username ernail --password ${{ secrets.GITHUB_TOKEN }}"
+      - name: "Publish Helm Chart"
+        run: "helm push hedgedoc-${{ needs.determine-version-job.outputs.version }}.tgz oci://ghcr.io/ernail/charts"
       - name: "Create GitHub Release"
         uses: "softprops/action-gh-release@v2.4.2"
         with:

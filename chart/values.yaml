@@ -108,6 +108,21 @@ hostPodAntiAffinity:
 # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
 tolerations: {}
 
+# -- The ports of the container.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/service/
+containerPorts:
+  - port: 3000
+    # -- The name of the port.
+    # Should match `.Values.readinessProbe.port`, `.Values.livenessProbe.port` and `.Values.service.ports[].name`
+    name: "http"
+    protocol: "TCP"
+  - port: 3000
+    # -- The name of the port.
+    # Should match `.Values.metrics.service.ports[].name`.
+    name: "metrics"
+    protocol: "TCP"
+
 # -- Liveness Probe configuration.
 # Liveness probes can be dangerous. Only use them if you really need one.
 # See https://srcco.de/posts/kubernetes-liveness-probes-are-dangerous.html for more information.
@@ -118,7 +133,8 @@ livenessProbe: {}
   #   # -- The path to use for the liveness probe.
   #   path: "/live"
   #   # -- The port to use for the liveness probe.
-  #   # This should reference the container ports defined at `.Values.containerPorts`.
+  #   # -- The name of the port.
+  #   # Should match `.Values.containerPorts[].name`.
   #   port: "http"
 
 # -- Readiness Probe configuration.
@@ -129,7 +145,7 @@ readinessProbe:
     # -- The path to use for the readiness probe.
     path: "/status"
     # -- The port to use for the readiness probe.
-    # This should reference the container ports defined at `.Values.containerPorts`.
+    # Should match `.Values.containerPorts[].name`.
     port: "http"
 
 # -- Autoscaling configuration.
@@ -156,7 +172,7 @@ configMap:
   # -- Whether to create a ConfigMap resource.
   enabled: true
   # -- The name of the ConfigMap.
-  # The name should reference the ConfigMap name at `.Values.volumes`.
+  # Should match `.Values.volumeConfig.*.volume.configMap.name`.
   name: "config"
   # -- Annotations to add to the ConfigMap.
   annotations: {}
@@ -174,15 +190,21 @@ volumeConfig:
   imageUploads:
     # -- Will be added to the pods `volumeMounts`.
     volumeMount:
+      # -- The name of the volume mount.
+      # Should match `.Values.volumeConfig.*.volume.name` and `.Values.volumeConfig.persistence.volume.name`.
       name: "hedgedoc-image-uploads"
       mountPath: "/hedgedoc/public/uploads"
     # -- Will be added to the pods `volumes` if `persistence.enabled` is `false`.
     volume:
+      # -- The name of the volume.
+      # Should match `.Values.volumeConfig.*.volumeMount.name`.
       name: "hedgedoc-image-uploads"
       emptyDir: {}
     # -- Persistent Volume Claim configuration
     persistence:
       enabled: false
+      # -- The name of the Persistent Volume Claim.
+      # Should match `.Values.volumeConfig.*.persistence.volume.persistentVolumeClaim.claimName`.
       pvcName: "hedgedoc-image-uploads"
       annotations: {}
       accessModes:
@@ -191,16 +213,24 @@ volumeConfig:
       storageClass: ""
       # -- Will be added to the pods `volumes` if `persistence.enabled` is `true`.
       volume:
+        # -- The name of the volume.
+        # Should match `.Values.volumeConfig.*.volumeMount.name`.
         name: "hedgedoc-image-uploads"
         persistentVolumeClaim:
+          # -- The name of the Persistent Volume Claim.
+          # Should match `.Values.volumeConfig.persistence.pvcName`.
           claimName: "hedgedoc-image-uploads"
   tmp:
     # -- Will be added to the pods `volumeMounts`.
     volumeMount:
+      # -- The name of the volume mount.
+      # Should match `.Values.volumeConfig.*.volume.name`.
       name: "tmp"
       mountPath: "/tmp"
     # -- Will be added to the pods `volumes`.
     volume:
+      # -- The name of the volume.
+      # Should match `.Values.volumeConfig.*.volumeMount.name`.
       name: "tmp"
       emptyDir: {}
 
@@ -218,25 +248,6 @@ serviceAccount:
   # If not set, a name is generated based on the chart name.
   name: ""
 
-# -- The ports of the container.
-# To use these ports in the service(s),
-# you need to add them to `.Values.service.ports` or `.Values.metrics.service.ports`.
-#
-# If `.Values.livenessProbe.enabled` is true, you need to add them to `.Values.livenessProbe`.
-#
-# If `.Values.readinessProbe.enabled` is true, you need to add them to `.Values.readinessProbe`.
-#
-# Ref: https://kubernetes.io/docs/concepts/services-networking/service/
-#
-# Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
-containerPorts:
-  - name: "http"
-    port: 3000
-    protocol: "TCP"
-  - name: "metrics"
-    port: 3000
-    protocol: "TCP"
-
 # -- Service configuration.
 # A service for metrics is created separately. Check `.Values.metrics` for more information.
 #
@@ -247,14 +258,16 @@ service:
   # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: "ClusterIP"
   # -- The ports of the service.
-  # These should reference the container ports defined at `.Values.containerPorts`.
-  # When `.Values.ingress.enabled` is `true`, they should reference `.Values.ingress.hosts`.
   #
   # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   ports:
-    - name: "http"
-      port: 3000
+    - port: 3000
       protocol: "TCP"
+      # -- The name of the service port.
+      # Should match `.Values.ingress.hosts[].paths[].servicePortName`
+      name: "http"
+      # -- The target port.
+      # Should match `.Values.containerPorts[].name`.
       targetPort: "http"
   # -- Wether to create an additional headless service.
   # This should be enabled when using StatefulSets.
@@ -275,13 +288,16 @@ metrics:
     # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     type: "ClusterIP"
     # -- The ports of the metrics service.
-    # These should reference the container ports defined at `.Values.containerPorts`.
     #
     # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     ports:
-      - name: "metrics"
-        port: 3000
+      - port: 3000
         protocol: "TCP"
+        # -- The name of the service port.
+        # Should match `.Values.metrics.serviceMonitor.endpoints[].port`.
+        name: "metrics"
+        # -- The target port.
+        # Should match `.Values.containerPorts[].name`.
         targetPort: "metrics"
   # -- ServiceMonitor configuration.
   #
@@ -292,7 +308,7 @@ metrics:
     # -- Configuration of the endpoints to scrape.
     endpoints:
       # -- The service port to scrape.
-      # This should reference the service ports defined at `.Values.metrics.service.ports`.
+      # Should match `.Values.metrics.service.ports[].name`.
       - port: "metrics"
         # -- The interval at which metrics should be scraped.
         interval: "30s"
@@ -311,8 +327,8 @@ ingress:
   enabled: false
   # -- Annotations to add to the Ingress.
   annotations: {}
-  # kubernetes.io/ingress.class: "nginx"
-  # cert-manager.io/cluster-issuer: "dns01-cloudflare-cluster-issuer-prod"
+    # kubernetes.io/ingress.class: "nginx"
+    # cert-manager.io/cluster-issuer: "dns01-cloudflare-cluster-issuer-prod"
   # -- The class of the Ingress controller.
   className: "nginx"
   # -- The hosts of the Ingress.
@@ -322,7 +338,7 @@ ingress:
         - path: "/"
           pathType: "Prefix"
           # -- The service port name to use for the Ingress.
-          # This should reference the service ports defined at `.Values.service.ports`.
+          # Should match `.Values.service.ports[].name`.
           servicePortName: "http"
   # -- The TLS configuration for the Ingress.
   tls:

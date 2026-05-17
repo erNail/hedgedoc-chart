@@ -1,24 +1,24 @@
-{{- if .Values.volumeConfig.imageUploads.persistence.enabled -}}
+{{- range $key, $config := .Values.volumeConfig }}
+{{- if and $config.persistence $config.persistence.enabled }}
 ---
 kind: "PersistentVolumeClaim"
-apiVersion: {{ .Values.apiVersions.persistentVolumeClaim | quote }}
+apiVersion: {{ $.Values.apiVersions.persistentVolumeClaim | quote }}
 metadata:
-  name: {{ .Values.volumeConfig.imageUploads.persistence.pvcName | quote }}
-  namespace: {{ include "names.namespace" . | quote }}
+  name: {{ $config.persistence.pvcName | quote }}
+  namespace: {{ include "names.namespace" $ | quote }}
   labels:
-    {{- include "labels.commonLabels" . | nindent 4 }}
-  {{- with .Values.volumeConfig.imageUploads.persistence.annotations }}
+    {{- include "labels.commonLabels" $ | nindent 4 }}
+  {{- with $config.persistence.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   accessModes:
-  {{- range .Values.volumeConfig.imageUploads.persistence.accessModes }}
-    - {{ . | quote}}
-  {{- end }}
+    {{- toYaml $config.persistence.accessModes | nindent 4 }}
   resources:
     requests:
-      storage: {{ .Values.volumeConfig.imageUploads.persistence.size | quote }}
-  storageClassName: {{ .Values.volumeConfig.imageUploads.persistence.storageClass | quote }}
+      storage: {{ $config.persistence.size | quote }}
+  storageClassName: {{ $config.persistence.storageClass | quote }}
 ...
+{{- end }}
 {{- end }}

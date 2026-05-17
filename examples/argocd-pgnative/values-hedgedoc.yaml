@@ -9,10 +9,12 @@ resources:
     memory: "256Mi"
     ephemeral-storage: "256Mi"
 
-persistence:
-  enabled: true
-  size: "16Gi"
-  storageClass: "nfs-subdir-retain"
+volumeConfig:
+  imageUploads:
+    persistence:
+      enabled: true
+      size: "1Gi"
+      storageClass: "longhorn"
 
 metrics:
   enabled: true

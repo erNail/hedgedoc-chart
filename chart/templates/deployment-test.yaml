@@ -138,10 +138,12 @@ tests:
           value:
             - name: "myregistrykey"
 
-  - it: "should not render podSecurityContext with default value"
+  - it: "should render podSecurityContext with default value"
     asserts:
-      - notExists:
+      - equal:
           path: "spec.template.spec.securityContext"
+          value:
+            fsGroup: 10001
 
   - it: "should render podSecurityContext as set"
     set:

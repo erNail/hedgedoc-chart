@@ -1,7 +1,7 @@
 [tools]
 actionlint = "1.7.12"
 helm = "4.2.0"
-helmfile = "1.5.1"
+helmfile = "1.5.2"
 "github:stackrox/kube-linter" = "0.8.3"
 kube-score = "1.20.0"
 markdownlint-cli2 = "0.22.1"

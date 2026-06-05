@@ -16,7 +16,7 @@ jobs:
           path: "${{ github.workspace }}/.cache/mise"
           key: "${{ hashFiles('mise.toml') }}"
       - name: "Setup mise"
-        uses: "jdx/mise-action@v4.0.1"
+        uses: "jdx/mise-action@v4.1.0"
       - name: "Run linting, building, tests"
         run: "mise run pre-commit"
 
@@ -35,7 +35,7 @@ jobs:
           path: "${{ github.workspace }}/.cache/mise"
           key: "${{ hashFiles('mise.toml') }}"
       - name: "Setup mise"
-        uses: "jdx/mise-action@v4.0.1"
+        uses: "jdx/mise-action@v4.1.0"
       - name: "Run verscout next"
         id: "get_version"
         run: |
@@ -67,7 +67,7 @@ jobs:
           path: "${{ github.workspace }}/.cache/mise"
           key: "${{ hashFiles('mise.toml') }}"
       - name: "Setup mise"
-        uses: "jdx/mise-action@v4.0.1"
+        uses: "jdx/mise-action@v4.1.0"
       - name: "Prepare release artifacts"
         run: "mise run release:prepare --version ${{ needs.determine-version-job.outputs.version }}"
       - name: "Login to helm registry"

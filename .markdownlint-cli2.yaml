@@ -1,0 +1,10 @@
+---
+config:
+  line_length:
+    line_length: 120
+    code_blocks: false
+    tables: false
+
+ignores:
+  - ".github/ISSUE_TEMPLATE/*"
+  - "release-notes.md"

@@ -45,7 +45,7 @@ run = "tombi lint"
 
 [tasks."lint:markdownlint"]
 description = "Run markdownlint"
-run = "markdownlint-cli2 **.md"
+run = "markdownlint-cli2 \"**/*.md\""
 
 [tasks."lint:actionlint"]
 description = "Run actionlint"

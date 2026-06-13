@@ -12,6 +12,7 @@ yamllint = "1.38.0"
 tombi = "1.1.1"
 "github:ernail/verscout" = "2.1.1"
 git-cliff = "2.13.1"
+gh = "2.93.0"
 
 [tasks."helmfile:template"]
 description = "Render manifests with helmfile"
@@ -95,29 +96,42 @@ run = [
   "helm package chart --version {{ usage.version }}",
 ]
 
-[tasks."changelog:generate"]
-description = "Generate changelog with git-cliff"
-usage = """
-flag "--version <version>" help="The version to use for generating the changelog" default="0.0.0"
-"""
-run = "git-cliff --tag {{ usage.version }} --unreleased --strip header --output release-notes.md"
-
 [tasks.pre-commit]
 description = "Run pre-commit checks"
 run = [
   { tasks = ["lint", "test", "build"] },
 ]
 
-[tasks."release:prepare"]
-description = "Prepare release artifacts"
-usage = """
-flag "--version <version>" help="The version to use for the release" default="0.0.0"
-"""
-run = """
-mise run build --version {{ usage.version }}
-mise run changelog:generate --version {{ usage.version }}
-"""
-
-[tasks."verscout"]
+[tasks."release:determine-version"]
 description = "Determine next version with verscout"
 run = "verscout next"
+
+[tasks."release:generate-changelog"]
+description = "Generate changelog with git-cliff"
+usage = """
+flag "--version <version>" help="The version to use for generating the changelog" default="0.0.0"
+"""
+run = "git-cliff --tag {{ usage.version }} --unreleased --strip header --output release-notes.md"
+
+[tasks."release:publish"]
+description = "Publish the helm chart"
+env = { "GITHUB_TOKEN" = { required = true }, "DEFAULT_BRANCH" = { required = true }, "CURRENT_BRANCH" = { required = true } }
+run = """
+NEXT_VERSION=$(mise run release:determine-version)
+
+if [ -z "$NEXT_VERSION" ]; then
+  echo "No new commits found that would trigger a release. Skipping release."
+  exit 1
+fi
+
+if [ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" ]; then
+  NEXT_VERSION="$NEXT_VERSION-rc"
+fi
+
+mise run build --version $NEXT_VERSION
+mise run release:generate-changelog --version $NEXT_VERSION
+
+helm registry login ghcr.io --username ernail --password $GITHUB_TOKEN
+helm push hedgedoc-$NEXT_VERSION.tgz oci://ghcr.io/ernail/charts
+gh release create --draft --notes-file release-notes.md $NEXT_VERSION hedgedoc-$NEXT_VERSION.tgz
+"""

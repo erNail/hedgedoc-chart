@@ -12,7 +12,7 @@ yamllint = "1.38.0"
 tombi = "1.1.1"
 "github:ernail/verscout" = "2.1.1"
 git-cliff = "2.13.1"
-gh = "2.93.0"
+gh = "2.95.0"
 
 [tasks."helmfile:template"]
 description = "Render manifests with helmfile"
